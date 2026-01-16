@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [7.6.1] - 2026-01-16
+
+### Fixed
+- src/index.ts: Added missing entry point file
+- package.json: Updated description to "AI development workflow engine"
+- package-lock.json: Synced version to 7.6.x
+- SKILL.md: Added Step 2.5 to flowcharts
+- CHANGELOG.md: Added [7.6.0] version link
+- hooks/branch-protect.sh: "checkpoint" → "cp-*"
+- templates/DOD-TEMPLATE.md: Updated title format
+
 ## [7.6.0] - 2026-01-16
 
 ### Fixed
@@ -113,7 +124,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Previous iterations were experimental development versions leading up to the 7.0.0 stable release.
 
-[Unreleased]: https://github.com/perfectuser21/zenithjoy-engine/compare/v7.5.2...HEAD
+[Unreleased]: https://github.com/perfectuser21/zenithjoy-engine/compare/v7.6.1...HEAD
+[7.6.1]: https://github.com/perfectuser21/zenithjoy-engine/compare/v7.6.0...v7.6.1
+[7.6.0]: https://github.com/perfectuser21/zenithjoy-engine/compare/v7.5.2...v7.6.0
 [7.5.2]: https://github.com/perfectuser21/zenithjoy-engine/compare/v7.5.1...v7.5.2
 [7.5.1]: https://github.com/perfectuser21/zenithjoy-engine/compare/v7.5.0...v7.5.1
 [7.5.0]: https://github.com/perfectuser21/zenithjoy-engine/compare/v7.4.1...v7.5.0
