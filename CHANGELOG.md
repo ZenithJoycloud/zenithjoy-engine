@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [7.9.7] - 2026-01-16
+
+### Fixed
+- SKILL.md: 锚点链接修复（双破折号→单破折号）
+- tsconfig.json: 排除测试文件 (*.test.ts) 编译到 dist
+- .gitignore: 添加 .env*, *.tsbuildinfo, coverage/
+- check.sh: 添加 -h/--help 帮助支持
+- check.sh: 添加 git 仓库检查
+- check.sh: FEATURE_BRANCH 为空时显示占位符
+- branch-protect.sh: 添加 .sh 文件保护
+
+### Removed
+- skills/dev/SKILL.md.backup 临时文件（违反规范）
+
 ## [7.9.6] - 2026-01-16
 
 ### Fixed
@@ -223,7 +237,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Previous iterations were experimental development versions leading up to the 7.0.0 stable release.
 
-[Unreleased]: https://github.com/perfectuser21/zenithjoy-engine/compare/v7.9.6...HEAD
+[Unreleased]: https://github.com/perfectuser21/zenithjoy-engine/compare/v7.9.7...HEAD
+[7.9.7]: https://github.com/perfectuser21/zenithjoy-engine/compare/v7.9.6...v7.9.7
 [7.9.6]: https://github.com/perfectuser21/zenithjoy-engine/compare/v7.9.5...v7.9.6
 [7.9.5]: https://github.com/perfectuser21/zenithjoy-engine/compare/v7.9.4...v7.9.5
 [7.9.4]: https://github.com/perfectuser21/zenithjoy-engine/compare/v7.9.3...v7.9.4

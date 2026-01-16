@@ -4,13 +4,40 @@
 #
 # BRANCH_NAME 必须是 cp-* 格式的分支名
 
+# 帮助信息
+show_help() {
+  echo "用法: bash check.sh <cp-分支名> [feature-分支名]"
+  echo ""
+  echo "参数:"
+  echo "  cp-分支名      cp-* 格式的分支名（必须）"
+  echo "  feature-分支名  feature/* 格式的基础分支（可选）"
+  echo ""
+  echo "示例:"
+  echo "  bash check.sh cp-20260116-fix-bug feature/zenith-engine"
+  echo ""
+  echo "此脚本检查 /dev 工作流的完成度，验证清理阶段的各项检查点。"
+}
+
 BRANCH_NAME="${1:-}"
 FEATURE_BRANCH="${2:-}"
 
+# 帮助参数
+if [[ "$BRANCH_NAME" == "-h" || "$BRANCH_NAME" == "--help" ]]; then
+  show_help
+  exit 0
+fi
+
+# Git 仓库检查
+if ! git rev-parse --git-dir &>/dev/null; then
+  echo "❌ 当前目录不是 git 仓库"
+  exit 1
+fi
+
 # 参数验证
 if [[ -z "$BRANCH_NAME" ]]; then
-  echo "❌ 用法: bash scripts/check.sh <cp-分支名> [feature-分支名]"
-  echo "   示例: bash scripts/check.sh cp-20260116-fix-bug feature/zenith-engine"
+  echo "❌ 缺少参数"
+  echo ""
+  show_help
   exit 1
 fi
 
@@ -66,7 +93,11 @@ if [[ "$CURRENT" == feature/* ]]; then
   ((DONE++))
 else
   echo "  ❌ 未切回 feature 分支 (当前: $CURRENT)"
-  MISSING+=("git checkout $FEATURE_BRANCH")
+  if [[ -n "$FEATURE_BRANCH" ]]; then
+    MISSING+=("git checkout $FEATURE_BRANCH")
+  else
+    MISSING+=("git checkout <your-feature-branch>")
+  fi
 fi
 
 # git pull 已执行？（假设已执行，无法验证）
