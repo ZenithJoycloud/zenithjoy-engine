@@ -17,6 +17,9 @@ function isValidNumber(value: unknown): value is number {
   return typeof value === 'number' && Number.isFinite(value);
 }
 
+// 故意的类型错误 - 测试 Hook
+const testTypeError: string = 123;
+
 /**
  * 编译时枚举穷举性检查
  * 如果添加新操作但忘记更新 switch，TypeScript 会报错
