@@ -1,4 +1,4 @@
-# DoD: [Checkpoint 名称]
+# DoD - <功能名>
 
 > Definition of Done - 机器可判定的完成标准
 >

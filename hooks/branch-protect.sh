@@ -61,7 +61,7 @@ fi
 if [[ ! "$CURRENT_BRANCH" =~ ^cp- ]]; then
     echo "" >&2
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" >&2
-    echo "  ❌ 只能在 checkpoint 分支修改代码" >&2
+    echo "  ❌ 只能在 cp-* 分支修改代码" >&2
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" >&2
     echo "" >&2
     echo "当前分支: $CURRENT_BRANCH" >&2

@@ -78,7 +78,7 @@ Step 1: 检查当前分支
     │
     ├─ main？→ ❌ 不允许，选择/创建 feature 分支 → 重新 Step 1
     │
-    ├─ feature/*？→ ✅ 询问用户任务 → Step 2 创建 cp-* → Step 3
+    ├─ feature/*？→ ✅ 询问用户任务 → Step 2 创建 cp-* → Step 2.5 上下文回顾 → Step 3
     │
     ├─ cp-*？→ ✅ 继续当前任务 → 跳过 Step 2 → 直接 Step 3
     │
@@ -588,6 +588,7 @@ echo "  - 项目经验: <项目>/docs/LEARNINGS.md"
 │ /dev                                                        │
 │   → 检查分支 (git)                                          │
 │   → 创建 cp-* 分支                                          │
+│   → 上下文回顾                                              │
 │   → PRD + DoD → 用户确认                                    │
 │   → 写代码 + 自测                                           │
 │   → PR + sleep 等待 CI                                      │
