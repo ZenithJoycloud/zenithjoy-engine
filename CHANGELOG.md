@@ -7,6 +7,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [7.10.0] - 2026-01-16
+
+### Fixed
+- check.sh: 硬编码 CLEANUP_VERIFIED=6 改为动态计算
+- check.sh: feature 分支检查验证参数匹配
+- check.sh: git ls-remote 网络故障处理（区分网络错误和分支不存在）
+- check.sh: git 命令添加错误处理
+- check.sh: 变量命名优化（TOTAL → REQUIRED_COUNT 等）
+- check.sh: cp-* 格式验证完善（必须有 name 部分）
+- project-detect.sh: 文件检查改用绝对路径 $PROJECT_ROOT
+- branch-protect.sh: 正则完善（cp-[a-zA-Z0-9] 而非 cp-）
+- ci.yml: notify-failure 区分失败原因（version-check/test）
+- ci.yml: Shell 检查捕获 stderr 显示具体错误
+- ci.yml: Python 依赖安装添加错误处理
+- ci.yml: npm 缓存添加 cache-dependency-path
+- ci.yml: test job 超时调整为 30 分钟
+- ci.yml: 移除冗余 git fetch（fetch-depth: 0 已包含）
+- ci.yml: auto-merge 失败添加 GitHub warning 注解
+- ci.yml: Notion URL 逻辑简化
+- ci.yml: Go/Python 版本从项目文件动态检测
+- calculator.ts: 添加枚举穷举性检查（assertNever）
+- calculator.ts: 移除死代码 try-catch（JS 数学运算不抛异常）
+
+### Added
+- calculator.test.ts: 8 个新测试（负数分数次方、浮点精度、极端数值链式操作）
+
 ## [7.9.9] - 2026-01-16
 
 ### Fixed
@@ -264,7 +290,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Previous iterations were experimental development versions leading up to the 7.0.0 stable release.
 
-[Unreleased]: https://github.com/perfectuser21/zenithjoy-engine/compare/v7.9.9...HEAD
+[Unreleased]: https://github.com/perfectuser21/zenithjoy-engine/compare/v7.10.0...HEAD
+[7.10.0]: https://github.com/perfectuser21/zenithjoy-engine/compare/v7.9.9...v7.10.0
 [7.9.9]: https://github.com/perfectuser21/zenithjoy-engine/compare/v7.9.8...v7.9.9
 [7.9.8]: https://github.com/perfectuser21/zenithjoy-engine/compare/v7.9.7...v7.9.8
 [7.9.7]: https://github.com/perfectuser21/zenithjoy-engine/compare/v7.9.6...v7.9.7
