@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [7.9.8] - 2026-01-16
+
+### Fixed
+- ci.yml: auto-merge needs 加入 version-check 依赖
+- ci.yml: BASE_VERSION 空值检查防止版本比较失效
+- ci.yml: bash -n 显示错误输出便于调试
+- ci.yml: 添加 workflow 并发控制和 job timeout
+- calculator.ts: chain() 初始值 NaN/Infinity 验证
+- LEARNINGS.md: 标记描述完整 (□/□⏭/○)
+
 ## [7.9.7] - 2026-01-16
 
 ### Fixed
@@ -237,7 +247,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Previous iterations were experimental development versions leading up to the 7.0.0 stable release.
 
-[Unreleased]: https://github.com/perfectuser21/zenithjoy-engine/compare/v7.9.7...HEAD
+[Unreleased]: https://github.com/perfectuser21/zenithjoy-engine/compare/v7.9.8...HEAD
+[7.9.8]: https://github.com/perfectuser21/zenithjoy-engine/compare/v7.9.7...v7.9.8
 [7.9.7]: https://github.com/perfectuser21/zenithjoy-engine/compare/v7.9.6...v7.9.7
 [7.9.6]: https://github.com/perfectuser21/zenithjoy-engine/compare/v7.9.5...v7.9.6
 [7.9.5]: https://github.com/perfectuser21/zenithjoy-engine/compare/v7.9.4...v7.9.5

@@ -6,6 +6,11 @@ on:
   push:
     branches: [main, 'feature/*']
 
+# 工作流级并发控制：同一 ref 的多次 push 只保留最新
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   version-check:
     if: github.event_name == 'pull_request'
@@ -26,7 +31,12 @@ jobs:
 
           # Get base branch version
           git fetch origin ${{ github.base_ref }}
-          BASE_VERSION=$(git show origin/${{ github.base_ref }}:package.json | grep '"version"' | head -1 | sed 's/.*"version": "\(.*\)".*/\1/')
+          BASE_VERSION=$(git show origin/${{ github.base_ref }}:package.json 2>/dev/null | grep '"version"' | head -1 | sed 's/.*"version": "\(.*\)".*/\1/' || echo "")
+
+          if [ -z "$BASE_VERSION" ]; then
+            echo "⚠️ Could not read base branch version, skipping check"
+            exit 0
+          fi
 
           # Get current version
           CURRENT_VERSION=$(grep '"version"' package.json | head -1 | sed 's/.*"version": "\(.*\)".*/\1/')
@@ -44,6 +54,7 @@ jobs:
 
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
 
@@ -115,10 +126,10 @@ jobs:
           FOUND=0
           while IFS= read -r -d '' f; do
             FOUND=1
-            if bash -n "$f" 2>/dev/null; then
+            if bash -n "$f" 2>&1; then
               echo "  ✅ $f"
             else
-              echo "  ❌ $f"
+              echo "  ❌ $f (see error above)"
               FAILED=1
             fi
           done < <(find . -name "*.sh" -type f -print0)
@@ -128,8 +139,9 @@ jobs:
           exit $FAILED
 
   # 自动合并 PR（CI 通过后）
+  # 注意：version-check 只在 PR 时运行，push 时为 skipped
   auto-merge:
-    needs: [test]
+    needs: [version-check, test]
     if: github.event_name == 'pull_request' && !failure() && !cancelled() && (needs.version-check.result == 'success' || needs.version-check.result == 'skipped')
     runs-on: ubuntu-latest
     # 并发保护：同一个 base 分支的 PR 排队合并，避免冲突
