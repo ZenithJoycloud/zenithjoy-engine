@@ -47,6 +47,14 @@ if [[ ! "$BRANCH_NAME" == cp-* ]]; then
   exit 1
 fi
 
+# 验证分支是否存在（本地或远程）
+LOCAL_BRANCH=$(git branch --list "$BRANCH_NAME" 2>/dev/null)
+REMOTE_BRANCH=$(git ls-remote --heads origin "$BRANCH_NAME" 2>/dev/null)
+if [[ -z "$LOCAL_BRANCH" && -z "$REMOTE_BRANCH" ]]; then
+  echo "⚠️ 分支 $BRANCH_NAME 不存在（本地和远程都没有）"
+  echo "   这可能是因为分支已被清理，或者名称拼写错误"
+fi
+
 ZENITHJOY_ENGINE="${ZENITHJOY_ENGINE:-/home/xx/dev/zenithjoy-engine}"
 SKILL_FILE="$ZENITHJOY_ENGINE/skills/dev/SKILL.md"
 
@@ -64,9 +72,10 @@ echo "━━━━━━━━━━━━━━━━━━━━━━━━�
 
 # 从 SKILL.md 动态计算必要项和可选项数量
 # □ = 必要（后跟空格，不跟⏭）, □⏭ = 可跳过, ○ = 可选
+# 注意：先统计 □⏭，再统计 □ 后跟空格的（排除 □⏭）
 SKIPPABLE=$(grep -c '^  □⏭' "$SKILL_FILE" 2>/dev/null || echo 0)
-TOTAL_CHECKBOX=$(grep -c '^  □' "$SKILL_FILE" 2>/dev/null || echo 0)
-REQUIRED=$((TOTAL_CHECKBOX - SKIPPABLE))
+# 使用正则排除 □⏭：匹配 □ 后面不是 ⏭ 的行
+REQUIRED=$(grep -E '^  □[^⏭]' "$SKILL_FILE" 2>/dev/null | wc -l || echo 0)
 OPTIONAL=$(grep -c '^  ○' "$SKILL_FILE" 2>/dev/null || echo 0)
 TOTAL=$REQUIRED
 

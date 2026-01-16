@@ -182,6 +182,32 @@ describe('calculate', () => {
       expect(result.input).toEqual(input);
     });
   });
+
+  describe('Input Validation', () => {
+    it('rejects NaN as input a', () => {
+      const result = calculate({ a: NaN, b: 5, operation: Operation.ADD });
+      expect(result.success).toBe(false);
+      expect(result.error).toContain("'a' is not a finite number");
+    });
+
+    it('rejects NaN as input b', () => {
+      const result = calculate({ a: 5, b: NaN, operation: Operation.ADD });
+      expect(result.success).toBe(false);
+      expect(result.error).toContain("'b' is not a finite number");
+    });
+
+    it('rejects Infinity as input', () => {
+      const result = calculate({ a: Infinity, b: 5, operation: Operation.ADD });
+      expect(result.success).toBe(false);
+      expect(result.error).toContain("'a' is not a finite number");
+    });
+
+    it('rejects negative Infinity as input', () => {
+      const result = calculate({ a: 5, b: -Infinity, operation: Operation.DIV });
+      expect(result.success).toBe(false);
+      expect(result.error).toContain("'b' is not a finite number");
+    });
+  });
 });
 
 describe('chain', () => {
@@ -259,6 +285,39 @@ describe('chain', () => {
       const result = chain(10).div(0).mul(2).result();
       expect(result.success).toBe(false);
       expect(result.value).toBeNaN();
+    });
+
+    it('rejects non-finite initial value (Infinity)', () => {
+      const result = chain(Infinity).add(5).result();
+      expect(result.success).toBe(false);
+      expect(result.error).toBe('Initial value is not finite');
+    });
+
+    it('rejects non-finite initial value (NaN)', () => {
+      const result = chain(NaN).add(5).result();
+      expect(result.success).toBe(false);
+      expect(result.error).toBe('Initial value is not finite');
+    });
+
+    it('rejects non-finite initial value (-Infinity)', () => {
+      const result = chain(-Infinity).mul(2).result();
+      expect(result.success).toBe(false);
+      expect(result.error).toBe('Initial value is not finite');
+    });
+  });
+
+  describe('Chain Result Input', () => {
+    it('returns last operation input in result', () => {
+      const result = chain(10).add(5).mul(2).result();
+      expect(result.input.operation).toBe(Operation.MUL);
+      expect(result.input.a).toBe(15); // 10 + 5
+      expect(result.input.b).toBe(2);
+    });
+
+    it('returns placeholder input when no operations', () => {
+      const result = chain(10).result();
+      expect(result.input.a).toBe(10);
+      expect(result.input.operation).toBe(Operation.ADD);
     });
   });
 

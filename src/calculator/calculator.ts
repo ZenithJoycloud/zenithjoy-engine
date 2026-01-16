@@ -11,10 +11,35 @@ import {
 } from './types';
 
 /**
+ * Validate that a value is a finite number
+ */
+function isValidNumber(value: unknown): value is number {
+  return typeof value === 'number' && Number.isFinite(value);
+}
+
+/**
  * Perform a single calculation
  */
 export function calculate(input: CalculatorInput): CalculatorResult {
   const { a, b, operation } = input;
+
+  // 运行时数字验证
+  if (!isValidNumber(a)) {
+    return {
+      success: false,
+      value: NaN,
+      error: `Invalid input: 'a' is not a finite number (got ${typeof a === 'number' ? a : typeof a})`,
+      input,
+    };
+  }
+  if (!isValidNumber(b)) {
+    return {
+      success: false,
+      value: NaN,
+      error: `Invalid input: 'b' is not a finite number (got ${typeof b === 'number' ? b : typeof b})`,
+      input,
+    };
+  }
 
   try {
     let value: number;
@@ -79,66 +104,80 @@ export function calculate(input: CalculatorInput): CalculatorResult {
 
 /**
  * Create a chainable calculator starting from an initial value
+ *
+ * 设计说明：
+ * - 错误后继续操作：一旦发生错误（如除以零），后续操作仍可继续但值为 NaN
+ * - 错误记录：只记录第一个错误，因为后续错误通常是连锁反应
+ * - result().input：返回最后一次操作的输入，如无操作则返回初始值
  */
 export function chain(initialValue: number): ChainableCalculator {
   let currentValue = initialValue;
-  let lastError: string | undefined;
+  let firstError: string | undefined;
+  let lastInput: CalculatorInput = { a: initialValue, b: 0, operation: Operation.ADD };
+  let hasOperations = false;
 
   // Validate initial value
   if (!Number.isFinite(initialValue)) {
-    lastError = 'Initial value is not finite';
+    firstError = 'Initial value is not finite';
   }
 
-  const createChain = (): ChainableCalculator => ({
+  const performOp = (n: number, operation: Operation): void => {
+    hasOperations = true;
+    const input: CalculatorInput = { a: currentValue, b: n, operation };
+    lastInput = input;
+
+    // 如果已经出错（currentValue 是 NaN），跳过计算但记录操作
+    if (!Number.isFinite(currentValue)) {
+      return;
+    }
+
+    const result = calculate(input);
+    if (!result.success && !firstError) {
+      firstError = result.error;
+    }
+    currentValue = result.value;
+  };
+
+  const calculator: ChainableCalculator = {
     get value() {
       return currentValue;
     },
 
     add(n: number): ChainableCalculator {
-      const result = calculate({ a: currentValue, b: n, operation: Operation.ADD });
-      if (!result.success && !lastError) lastError = result.error;
-      currentValue = result.value;
-      return createChain();
+      performOp(n, Operation.ADD);
+      return calculator;
     },
 
     sub(n: number): ChainableCalculator {
-      const result = calculate({ a: currentValue, b: n, operation: Operation.SUB });
-      if (!result.success && !lastError) lastError = result.error;
-      currentValue = result.value;
-      return createChain();
+      performOp(n, Operation.SUB);
+      return calculator;
     },
 
     mul(n: number): ChainableCalculator {
-      const result = calculate({ a: currentValue, b: n, operation: Operation.MUL });
-      if (!result.success && !lastError) lastError = result.error;
-      currentValue = result.value;
-      return createChain();
+      performOp(n, Operation.MUL);
+      return calculator;
     },
 
     div(n: number): ChainableCalculator {
-      const result = calculate({ a: currentValue, b: n, operation: Operation.DIV });
-      if (!result.success && !lastError) lastError = result.error;
-      currentValue = result.value;
-      return createChain();
+      performOp(n, Operation.DIV);
+      return calculator;
     },
 
     pow(n: number): ChainableCalculator {
-      const result = calculate({ a: currentValue, b: n, operation: Operation.POW });
-      if (!result.success && !lastError) lastError = result.error;
-      currentValue = result.value;
-      return createChain();
+      performOp(n, Operation.POW);
+      return calculator;
     },
 
     result(): CalculatorResult {
-      const success = Number.isFinite(currentValue) && !lastError;
+      const success = Number.isFinite(currentValue) && !firstError;
       return {
         success,
         value: currentValue,
-        error: lastError,
-        input: { a: initialValue, b: currentValue, operation: Operation.ADD },
+        error: firstError,
+        input: hasOperations ? lastInput : { a: initialValue, b: 0, operation: Operation.ADD },
       };
     },
-  });
+  };
 
-  return createChain();
+  return calculator;
 }

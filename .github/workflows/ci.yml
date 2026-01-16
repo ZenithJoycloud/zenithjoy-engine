@@ -7,9 +7,10 @@ on:
     branches: [main, 'feature/*']
 
 # 工作流级并发控制：同一 ref 的多次 push 只保留最新
+# 注意：auto-merge job 有自己的并发组（merge-*），不受此影响
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'push' }}
 
 jobs:
   version-check:
@@ -31,7 +32,8 @@ jobs:
 
           # Get base branch version
           git fetch origin ${{ github.base_ref }}
-          BASE_VERSION=$(git show origin/${{ github.base_ref }}:package.json 2>/dev/null | grep '"version"' | head -1 | sed 's/.*"version": "\(.*\)".*/\1/' || echo "")
+          # 支持 "version": "x.y.z" 和 "version":"x.y.z" 两种格式
+          BASE_VERSION=$(git show origin/${{ github.base_ref }}:package.json 2>/dev/null | grep '"version"' | head -1 | sed 's/.*"version"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/' || echo "")
 
           if [ -z "$BASE_VERSION" ]; then
             echo "⚠️ Could not read base branch version, skipping check"
@@ -39,7 +41,8 @@ jobs:
           fi
 
           # Get current version
-          CURRENT_VERSION=$(grep '"version"' package.json | head -1 | sed 's/.*"version": "\(.*\)".*/\1/')
+          # 支持 "version": "x.y.z" 和 "version":"x.y.z" 两种格式
+          CURRENT_VERSION=$(grep '"version"' package.json | head -1 | sed 's/.*"version"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/')
 
           echo "Base branch version: $BASE_VERSION"
           echo "Current version: $CURRENT_VERSION"
@@ -142,7 +145,8 @@ jobs:
   # 注意：version-check 只在 PR 时运行，push 时为 skipped
   auto-merge:
     needs: [version-check, test]
-    if: github.event_name == 'pull_request' && !failure() && !cancelled() && (needs.version-check.result == 'success' || needs.version-check.result == 'skipped')
+    # 必须：test 成功 + (version-check 成功或跳过)
+    if: github.event_name == 'pull_request' && needs.test.result == 'success' && (needs.version-check.result == 'success' || needs.version-check.result == 'skipped')
     runs-on: ubuntu-latest
     # 并发保护：同一个 base 分支的 PR 排队合并，避免冲突
     concurrency:

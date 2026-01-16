@@ -6,6 +6,13 @@
 
 set -e
 
+# 检查 jq 是否存在
+if ! command -v jq &>/dev/null; then
+  echo "⚠️ jq 未安装，分支保护 Hook 无法正常工作" >&2
+  echo "   请安装: apt install jq 或 brew install jq" >&2
+  exit 0  # 不阻止操作，但警告用户
+fi
+
 # Read JSON input from stdin
 INPUT=$(cat)
 
