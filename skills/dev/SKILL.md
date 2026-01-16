@@ -170,8 +170,37 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 # 推送
 git push -u origin HEAD
 
-# 创建 PR
-gh pr create --title "feat: 功能描述" --body "..."
+# ⚠️ 重要：自动检测 PR base 分支
+CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+
+if [[ "$CURRENT_BRANCH" =~ ^cp- ]]; then
+  # cp-xxx-01 → 找到对应的 feature 分支
+  # 方法1: 从状态文件读取
+  STATE_FILE=~/.ai-factory/state/current-task.json
+  if [ -f "$STATE_FILE" ]; then
+    BASE_BRANCH=$(jq -r '.feature_branch // empty' "$STATE_FILE")
+  fi
+
+  # 方法2: 如果状态文件没有，从远程分支推断
+  if [ -z "$BASE_BRANCH" ]; then
+    # 查找最近的 feature/* 分支
+    BASE_BRANCH=$(git branch -r | grep 'feature/' | head -1 | tr -d ' ' | sed 's|origin/||')
+  fi
+
+  # 方法3: 默认 fallback
+  if [ -z "$BASE_BRANCH" ]; then
+    BASE_BRANCH="main"
+    echo "⚠️ 未找到 feature 分支，PR 到 main"
+  fi
+else
+  # 不在 cp-* 分支，默认 PR 到 main
+  BASE_BRANCH="main"
+fi
+
+echo "📌 PR base 分支: $BASE_BRANCH"
+
+# 创建 PR（指定正确的 base 分支！）
+gh pr create --base "$BASE_BRANCH" --title "feat: 功能描述" --body "..."
 
 echo "✅ PR 已创建，等待 CI"
 echo "CI 通过后自动合并"
