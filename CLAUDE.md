@@ -49,12 +49,17 @@ zenithjoy-engine/
 
 ---
 
-## 分支策略
+## 分支策略（频繁回主线）
 
 ```
-main (stable)
-  └── feature/* (开发)
-        └── cp-* (任务)
+main (stable, 始终最新)
+  └── feature/* (临时，完成即删)
+        └── cp-* (任务分支，Hook 强制)
 ```
+
+**核心原则**：
+- feature 是临时的，完成就合并回 main 并删除
+- 只在 cp-* 分支写代码（Hook 强制）
+- 保持 main 始终最新，减少分支同步负担
 
 详细文档见 `docs/`。
