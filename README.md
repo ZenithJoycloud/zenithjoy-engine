@@ -30,6 +30,50 @@ ln -sf /path/to/zenithjoy-core/skills/finish ~/.claude/skills/
 cp /path/to/zenithjoy-core/.github/workflows/ci.yml your-project/.github/workflows/
 ```
 
+## Hooks 配置
+
+在 `~/.claude/settings.json` 中配置 Hooks：
+
+```json
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/branch-protect.sh"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/project-detect.sh"
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+### Hook 类型
+
+| Hook | 触发时机 | 用途 |
+|------|---------|------|
+| PreToolUse | 工具执行前 | 拦截 Write/Edit，检查分支 |
+| PostToolUse | 工具执行后 | 检测项目状态 |
+
+### branch-protect.sh
+
+检查是否在 `cp-*` 分支，不是则阻止写代码文件。
+
 ## Usage
 
 ### 开发流程
