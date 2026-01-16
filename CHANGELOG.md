@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [7.9.9] - 2026-01-16
+
+### Fixed
+- check.sh: grep 计数逻辑修复（□⏭ 不再被重复计算）
+- check.sh: 添加分支存在性验证（警告不存在的分支）
+- branch-protect.sh: 添加 jq 存在性检查（防止 Hook 静默失效）
+- ci.yml: auto-merge 条件显式检查 test.result == 'success'
+- ci.yml: 版本检查 sed 正则支持无空格 JSON 格式
+- ci.yml: 并发控制仅在 push 时取消旧任务（PR 不取消）
+- calculator.ts: calculate() 添加运行时数字验证（NaN/Infinity 输入）
+- calculator.ts: chain() 重构，修复 result().input 返回虚构数据
+- calculator.ts: chain() 错误后跳过计算（避免 NaN 继续操作）
+- STEPS.md: 版本标记更新
+
+### Added
+- calculator.test.ts: 9 个新测试覆盖输入验证和链式错误处理
+
 ## [7.9.8] - 2026-01-16
 
 ### Fixed
@@ -247,7 +264,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Previous iterations were experimental development versions leading up to the 7.0.0 stable release.
 
-[Unreleased]: https://github.com/perfectuser21/zenithjoy-engine/compare/v7.9.8...HEAD
+[Unreleased]: https://github.com/perfectuser21/zenithjoy-engine/compare/v7.9.9...HEAD
+[7.9.9]: https://github.com/perfectuser21/zenithjoy-engine/compare/v7.9.8...v7.9.9
 [7.9.8]: https://github.com/perfectuser21/zenithjoy-engine/compare/v7.9.7...v7.9.8
 [7.9.7]: https://github.com/perfectuser21/zenithjoy-engine/compare/v7.9.6...v7.9.7
 [7.9.6]: https://github.com/perfectuser21/zenithjoy-engine/compare/v7.9.5...v7.9.6
