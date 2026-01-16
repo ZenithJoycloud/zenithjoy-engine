@@ -41,15 +41,26 @@ if [[ -z "$BRANCH_NAME" ]]; then
   exit 1
 fi
 
-if [[ ! "$BRANCH_NAME" == cp-* ]]; then
-  echo "❌ BRANCH_NAME 必须是 cp-* 格式"
+# 验证 cp-* 格式（必须有内容在 cp- 后面）
+if [[ ! "$BRANCH_NAME" =~ ^cp-[a-zA-Z0-9] ]]; then
+  echo "❌ BRANCH_NAME 必须是 cp-<name> 格式"
   echo "   收到: $BRANCH_NAME"
   exit 1
 fi
 
 # 验证分支是否存在（本地或远程）
-LOCAL_BRANCH=$(git branch --list "$BRANCH_NAME" 2>/dev/null)
-REMOTE_BRANCH=$(git ls-remote --heads origin "$BRANCH_NAME" 2>/dev/null)
+LOCAL_BRANCH=$(git branch --list "$BRANCH_NAME" 2>/dev/null || echo "")
+# 检查网络连接和远程分支
+REMOTE_CHECK_OUTPUT=$(git ls-remote --heads origin "$BRANCH_NAME" 2>&1)
+REMOTE_CHECK_EXIT=$?
+if [[ $REMOTE_CHECK_EXIT -ne 0 ]]; then
+  echo "⚠️ 无法检查远程分支（网络问题或 origin 不存在）"
+  echo "   错误: $REMOTE_CHECK_OUTPUT"
+  REMOTE_BRANCH=""
+else
+  REMOTE_BRANCH="$REMOTE_CHECK_OUTPUT"
+fi
+
 if [[ -z "$LOCAL_BRANCH" && -z "$REMOTE_BRANCH" ]]; then
   echo "⚠️ 分支 $BRANCH_NAME 不存在（本地和远程都没有）"
   echo "   这可能是因为分支已被清理，或者名称拼写错误"
@@ -72,103 +83,116 @@ echo "━━━━━━━━━━━━━━━━━━━━━━━━�
 
 # 从 SKILL.md 动态计算必要项和可选项数量
 # □ = 必要（后跟空格，不跟⏭）, □⏭ = 可跳过, ○ = 可选
-# 注意：先统计 □⏭，再统计 □ 后跟空格的（排除 □⏭）
-SKIPPABLE=$(grep -c '^  □⏭' "$SKILL_FILE" 2>/dev/null || echo 0)
-# 使用正则排除 □⏭：匹配 □ 后面不是 ⏭ 的行
-REQUIRED=$(grep -E '^  □[^⏭]' "$SKILL_FILE" 2>/dev/null | wc -l || echo 0)
-OPTIONAL=$(grep -c '^  ○' "$SKILL_FILE" 2>/dev/null || echo 0)
-TOTAL=$REQUIRED
+# 注意：使用正则排除 □⏭
+SKIPPABLE_COUNT=$(grep -c '^  □⏭' "$SKILL_FILE" 2>/dev/null || echo 0)
+REQUIRED_COUNT=$(grep -E '^  □[^⏭]' "$SKILL_FILE" 2>/dev/null | wc -l || echo 0)
+OPTIONAL_COUNT=$(grep -c '^  ○' "$SKILL_FILE" 2>/dev/null || echo 0)
 
-DONE=0
-MISSING=()
+# 动态计算清理阶段的检查项数量（Step 6 下的 □ 项）
+# 查找 Step 6 到下一个 Step 或文件末尾之间的 □ 数量
+CLEANUP_ITEM_COUNT=$(awk '/^## Step 6/,/^## Step [0-9]|^$/ { if (/^  □[^⏭]/) count++ } END { print count+0 }' "$SKILL_FILE")
+
+COMPLETED_COUNT=0
+MISSING_COMMANDS=()
 
 echo ""
 echo "清理阶段 (Step 6):"
 
 # git config 已清理？
 CONFIG_EXISTS=$(git config "branch.$BRANCH_NAME.base" 2>/dev/null || echo "")
-if [ -z "$CONFIG_EXISTS" ]; then
+if [[ -z "$CONFIG_EXISTS" ]]; then
   echo "  ✅ git config 已清理"
-  ((DONE++))
+  ((COMPLETED_COUNT++))
 else
   echo "  ❌ git config 未清理"
-  MISSING+=("git config --unset branch.$BRANCH_NAME.base")
+  MISSING_COMMANDS+=("git config --unset branch.$BRANCH_NAME.base")
 fi
 
 # 当前在 feature 分支？
-CURRENT=$(git rev-parse --abbrev-ref HEAD)
-if [[ "$CURRENT" == feature/* ]]; then
-  echo "  ✅ 已切回 feature 分支 ($CURRENT)"
-  ((DONE++))
-else
-  echo "  ❌ 未切回 feature 分支 (当前: $CURRENT)"
-  if [[ -n "$FEATURE_BRANCH" ]]; then
-    MISSING+=("git checkout $FEATURE_BRANCH")
+CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "unknown")
+if [[ "$CURRENT_BRANCH" == "unknown" ]]; then
+  echo "  ❌ 无法获取当前分支名"
+  MISSING_COMMANDS+=("检查 git 状态")
+elif [[ "$CURRENT_BRANCH" == feature/* ]]; then
+  # 如果提供了 FEATURE_BRANCH，验证是否匹配
+  if [[ -n "$FEATURE_BRANCH" && "$CURRENT_BRANCH" != "$FEATURE_BRANCH" ]]; then
+    echo "  ⚠️ 当前在 feature 分支 ($CURRENT_BRANCH)，但与指定的 $FEATURE_BRANCH 不同"
+    ((COMPLETED_COUNT++))
   else
-    MISSING+=("git checkout <your-feature-branch>")
+    echo "  ✅ 已切回 feature 分支 ($CURRENT_BRANCH)"
+    ((COMPLETED_COUNT++))
+  fi
+else
+  echo "  ❌ 未切回 feature 分支 (当前: $CURRENT_BRANCH)"
+  if [[ -n "$FEATURE_BRANCH" ]]; then
+    MISSING_COMMANDS+=("git checkout $FEATURE_BRANCH")
+  else
+    MISSING_COMMANDS+=("git checkout <your-feature-branch>")
   fi
 fi
 
 # git pull 已执行？（假设已执行，无法验证）
-echo "  ✅ git pull 已执行"
-((DONE++))
+echo "  ✅ git pull 已执行（假设）"
+((COMPLETED_COUNT++))
 
 # 本地 cp-* 分支已删除？
-LOCAL_EXISTS=$(git branch --list "$BRANCH_NAME" 2>/dev/null)
-if [ -z "$LOCAL_EXISTS" ]; then
+LOCAL_EXISTS=$(git branch --list "$BRANCH_NAME" 2>/dev/null || echo "")
+if [[ -z "$LOCAL_EXISTS" ]]; then
   echo "  ✅ 本地 cp-* 分支已删除"
-  ((DONE++))
+  ((COMPLETED_COUNT++))
 else
   echo "  ❌ 本地 cp-* 分支未删除"
-  MISSING+=("git branch -D $BRANCH_NAME")
+  MISSING_COMMANDS+=("git branch -D $BRANCH_NAME")
 fi
 
 # 远程 cp-* 分支已删除？
-REMOTE_EXISTS=$(git ls-remote --heads origin "$BRANCH_NAME" 2>/dev/null)
-if [ -z "$REMOTE_EXISTS" ]; then
+REMOTE_CHECK=$(git ls-remote --heads origin "$BRANCH_NAME" 2>&1)
+REMOTE_EXIT=$?
+if [[ $REMOTE_EXIT -ne 0 ]]; then
+  echo "  ⚠️ 无法检查远程分支（网络问题）"
+elif [[ -z "$REMOTE_CHECK" ]]; then
   echo "  ✅ 远程 cp-* 分支已删除"
-  ((DONE++))
+  ((COMPLETED_COUNT++))
 else
   echo "  ❌ 远程 cp-* 分支未删除"
-  MISSING+=("git push origin --delete $BRANCH_NAME")
+  MISSING_COMMANDS+=("git push origin --delete $BRANCH_NAME")
 fi
 
 # stale 引用已清理？（假设已执行，无法验证）
-echo "  ✅ stale 引用已清理"
-((DONE++))
+echo "  ✅ stale 引用已清理（假设）"
+((COMPLETED_COUNT++))
 
 # 前面的阶段（假设已完成，因为能走到 cleanup）
-# 动态计算：总必要项 - 清理阶段已验证的 6 项 = 其他阶段的项数
-CLEANUP_VERIFIED=6
-OTHER_STAGES=$((REQUIRED - CLEANUP_VERIFIED))
-if [ $OTHER_STAGES -gt 0 ]; then
+# 动态计算：总必要项 - 清理阶段已验证的项数 = 其他阶段的项数
+OTHER_STAGES_COUNT=$((REQUIRED_COUNT - CLEANUP_ITEM_COUNT))
+if [[ $OTHER_STAGES_COUNT -gt 0 ]]; then
   echo ""
-  echo "其他阶段: ✅ $OTHER_STAGES/$OTHER_STAGES（已通过流程验证）"
-  DONE=$((DONE + OTHER_STAGES))
+  echo "其他阶段: ✅ $OTHER_STAGES_COUNT/$OTHER_STAGES_COUNT（已通过流程验证）"
+  COMPLETED_COUNT=$((COMPLETED_COUNT + OTHER_STAGES_COUNT))
 fi
 
 echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-printf "  完成度: %d/%d 必要" "$DONE" "$TOTAL"
-if [ "$SKIPPABLE" -gt 0 ]; then
-  printf " + %d 可跳过" "$SKIPPABLE"
+printf "  完成度: %d/%d 必要" "$COMPLETED_COUNT" "$REQUIRED_COUNT"
+if [[ "$SKIPPABLE_COUNT" -gt 0 ]]; then
+  printf " + %d 可跳过" "$SKIPPABLE_COUNT"
 fi
-if [ "$OPTIONAL" -gt 0 ]; then
-  printf " + %d 可选" "$OPTIONAL"
+if [[ "$OPTIONAL_COUNT" -gt 0 ]]; then
+  printf " + %d 可选" "$OPTIONAL_COUNT"
 fi
 echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
-if [ ${#MISSING[@]} -gt 0 ]; then
+if [[ ${#MISSING_COMMANDS[@]} -gt 0 ]]; then
   echo ""
   echo "⚠️ 缺失项修复命令："
-  for cmd in "${MISSING[@]}"; do
+  for cmd in "${MISSING_COMMANDS[@]}"; do
     echo "  $cmd"
   done
   exit 1
 fi
 
-if [ "$DONE" -eq "$TOTAL" ]; then
+if [[ "$COMPLETED_COUNT" -eq "$REQUIRED_COUNT" ]]; then
   echo ""
   echo "🎉 所有必要节点已完成！"
   exit 0

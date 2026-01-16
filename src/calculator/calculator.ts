@@ -18,6 +18,14 @@ function isValidNumber(value: unknown): value is number {
 }
 
 /**
+ * 编译时枚举穷举性检查
+ * 如果添加新操作但忘记更新 switch，TypeScript 会报错
+ */
+function assertNever(x: never): never {
+  throw new Error(`Unexpected operation: ${x}`);
+}
+
+/**
  * Perform a single calculation
  */
 export function calculate(input: CalculatorInput): CalculatorResult {
@@ -41,65 +49,52 @@ export function calculate(input: CalculatorInput): CalculatorResult {
     };
   }
 
-  try {
-    let value: number;
+  let value: number;
 
-    switch (operation) {
-      case Operation.ADD:
-        value = a + b;
-        break;
-      case Operation.SUB:
-        value = a - b;
-        break;
-      case Operation.MUL:
-        value = a * b;
-        break;
-      case Operation.DIV:
-        if (b === 0) {
-          return {
-            success: false,
-            value: NaN,
-            error: 'Division by zero',
-            input,
-          };
-        }
-        value = a / b;
-        break;
-      case Operation.POW:
-        value = Math.pow(a, b);
-        break;
-      default:
+  switch (operation) {
+    case Operation.ADD:
+      value = a + b;
+      break;
+    case Operation.SUB:
+      value = a - b;
+      break;
+    case Operation.MUL:
+      value = a * b;
+      break;
+    case Operation.DIV:
+      if (b === 0) {
         return {
           success: false,
           value: NaN,
-          error: `Unknown operation: ${operation}`,
+          error: 'Division by zero',
           input,
         };
-    }
+      }
+      value = a / b;
+      break;
+    case Operation.POW:
+      value = Math.pow(a, b);
+      break;
+    default:
+      // 编译时穷举性检查：如果添加新操作但忘记处理，这里会报类型错误
+      return assertNever(operation);
+  }
 
-    // Handle special numeric cases
-    if (!Number.isFinite(value)) {
-      return {
-        success: false,
-        value,
-        error: 'Result is not finite',
-        input,
-      };
-    }
-
-    return {
-      success: true,
-      value,
-      input,
-    };
-  } catch (error) {
+  // Handle special numeric cases (Infinity, -Infinity, NaN from operations like sqrt of negative)
+  if (!Number.isFinite(value)) {
     return {
       success: false,
-      value: NaN,
-      error: error instanceof Error ? error.message : 'Unknown error',
+      value,
+      error: 'Result is not finite',
       input,
     };
   }
+
+  return {
+    success: true,
+    value,
+    input,
+  };
 }
 
 /**

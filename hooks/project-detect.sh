@@ -30,13 +30,13 @@ if git rev-parse --git-dir &>/dev/null; then
     fi
 fi
 
-# 3. 检测 .github/workflows/ci.yml
-if [[ ! -f ".github/workflows/ci.yml" ]]; then
+# 3. 检测 .github/workflows/ci.yml（使用绝对路径）
+if [[ ! -f "$PROJECT_ROOT/.github/workflows/ci.yml" ]]; then
     MISSING_ITEMS+=("⚠️  缺少 .github/workflows/ci.yml - 没有配置 CI/CD")
 fi
 
-# 4. 检测 CLAUDE.md
-if [[ ! -f "CLAUDE.md" ]]; then
+# 4. 检测 CLAUDE.md（使用绝对路径）
+if [[ ! -f "$PROJECT_ROOT/CLAUDE.md" ]]; then
     MISSING_ITEMS+=("⚠️  缺少 CLAUDE.md - 没有项目说明文档")
 fi
 

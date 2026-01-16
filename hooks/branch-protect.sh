@@ -64,8 +64,8 @@ if [[ -z "$CURRENT_BRANCH" ]]; then
     exit 0
 fi
 
-# ===== 唯一检查: 必须在 cp-* 分支 =====
-if [[ ! "$CURRENT_BRANCH" =~ ^cp- ]]; then
+# ===== 唯一检查: 必须在 cp-* 分支（格式：cp-<name>，name 必须存在）=====
+if [[ ! "$CURRENT_BRANCH" =~ ^cp-[a-zA-Z0-9] ]]; then
     echo "" >&2
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" >&2
     echo "  ❌ 只能在 cp-* 分支修改代码" >&2
