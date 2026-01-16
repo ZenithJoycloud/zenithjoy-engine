@@ -45,11 +45,6 @@ echo "" >&2
 FAILED=0
 
 # 1. 运行 typecheck（如果有这个 script）
-if npm run typecheck --if-present 2>/dev/null | grep -q "error"; then
-    FAILED=1
-fi
-
-# 更可靠的检查方式
 if grep -q '"typecheck"' "$PROJECT_ROOT/package.json"; then
     echo "  → npm run typecheck..." >&2
     if ! npm run typecheck >/dev/null 2>&1; then
