@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [7.9.6] - 2026-01-16
+
+### Fixed
+- README.md: License MIT → ISC（与 package.json 一致）
+- README.md: Node.js 版本说明改为 "18+ (CI 使用 20)"
+- README.md: branch-protect.sh 描述补充重要目录保护
+- STEPS.md: 变量引用加双引号（行44, 413-415）
+- STEPS.md: Co-Authored-By 统一为 "Claude Opus 4.5"
+- ARCHITECTURE.md: ASCII 图表格式修复
+- ARCHITECTURE.md: Step 7 描述与实际流程同步（2 层而非 4 层）
+- ARCHITECTURE.md: 记录规则表格语义修正
+- project-detect.sh: 删除未使用的 RED 变量
+- project-detect.sh: git 检测改用 git rev-parse
+- check.sh: 正则计算逻辑修复（先统计 □⏭ 再计算）
+- SKILL.md: "清理 git config" 改为 □⏭（与创建时一致）
+- DOD-TEMPLATE.md: 添加"通用模板"说明
+- DOD-TEMPLATE.md: type-check → typecheck
+- DOD-TEMPLATE.md: 添加 semver 规则说明
+- DOD-TEMPLATE.md: 分支命名格式统一
+
 ## [7.9.5] - 2026-01-16
 
 ### Fixed
@@ -203,7 +223,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Previous iterations were experimental development versions leading up to the 7.0.0 stable release.
 
-[Unreleased]: https://github.com/perfectuser21/zenithjoy-engine/compare/v7.9.5...HEAD
+[Unreleased]: https://github.com/perfectuser21/zenithjoy-engine/compare/v7.9.6...HEAD
+[7.9.6]: https://github.com/perfectuser21/zenithjoy-engine/compare/v7.9.5...v7.9.6
 [7.9.5]: https://github.com/perfectuser21/zenithjoy-engine/compare/v7.9.4...v7.9.5
 [7.9.4]: https://github.com/perfectuser21/zenithjoy-engine/compare/v7.9.3...v7.9.4
 [7.9.3]: https://github.com/perfectuser21/zenithjoy-engine/compare/v7.9.2...v7.9.3

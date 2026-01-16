@@ -45,7 +45,7 @@ description: |
   □ PR 合并
 
 清理阶段 (Step 6)
-  □ 清理 git config
+  □⏭ 清理 git config（如果创建时保存了）
   □ 切回 feature 分支
   □ git pull
   □ 删除本地 cp-* 分支

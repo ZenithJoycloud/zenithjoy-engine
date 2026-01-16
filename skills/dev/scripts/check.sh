@@ -36,9 +36,10 @@ echo "  📋 关键节点完成度检查"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
 # 从 SKILL.md 动态计算必要项和可选项数量
-# □ = 必要（后跟空格）, □⏭ = 可跳过, ○ = 可选
-REQUIRED=$(grep -c '^  □ ' "$SKILL_FILE" 2>/dev/null || echo 0)
+# □ = 必要（后跟空格，不跟⏭）, □⏭ = 可跳过, ○ = 可选
 SKIPPABLE=$(grep -c '^  □⏭' "$SKILL_FILE" 2>/dev/null || echo 0)
+TOTAL_CHECKBOX=$(grep -c '^  □' "$SKILL_FILE" 2>/dev/null || echo 0)
+REQUIRED=$((TOTAL_CHECKBOX - SKIPPABLE))
 OPTIONAL=$(grep -c '^  ○' "$SKILL_FILE" 2>/dev/null || echo 0)
 TOTAL=$REQUIRED
 
