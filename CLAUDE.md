@@ -20,8 +20,9 @@ AI 开发工作流系统 - 把 AI Factory 全局化。
 zenithjoy-core/
 ├── .github/workflows/    # CI 配置
 │   └── ci.yml
-├── hooks/                # Claude Code Hooks
-│   └── branch-protect.sh # 分支保护（纯 git 检测）
+├── hooks/                # Claude Code Hooks（全局 ~/.claude/hooks/ 符号链接指向这里）
+│   ├── branch-protect.sh # 分支保护（PreToolUse: Write/Edit）
+│   └── project-detect.sh # 项目初始化检测（PostToolUse: Bash）
 ├── skills/               # Claude Code Skills
 │   └── dev/              # /dev - 统一开发工作流
 ├── templates/            # 模板文件
@@ -119,6 +120,6 @@ cd ../zenithjoy-core-cecilia
 
 ---
 
-**版本**: 0.2.0
+**版本**: 见 `package.json`（权威源）
 **创建**: 2026-01-15
 **更新**: 2026-01-16
