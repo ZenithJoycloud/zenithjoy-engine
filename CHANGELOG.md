@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [7.16.0] - 2026-01-17
+
+### Added
+- /dev 流程加入写测试步骤（Step 4）：每个功能必须有对应测试
+- /dev 流程加入质检闭环（Step 5.5）：CI + Codex review 自动轮询修复
+- Hook 强制本地测试：PR 创建前必须跑 npm test
+
+### Changed
+- 更新 STEPS.md Step 4 详细说明写测试要求
+- 更新 STEPS.md 新增 Step 5.5 质检闭环逻辑
+
 ## [7.15.1] - 2026-01-17
 
 ### Fixed

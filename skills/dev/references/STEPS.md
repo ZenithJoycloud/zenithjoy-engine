@@ -3,7 +3,7 @@
 > 此文档包含 /dev 工作流的完整实现细节。
 > 仅在需要时按步骤加载，减少上下文开销。
 >
-> 最后更新: 2026-01-17 v7.14.7
+> 最后更新: 2026-01-17 v7.16.0
 
 ---
 
@@ -179,19 +179,53 @@ head -30 docs/LEARNINGS.md 2>/dev/null || echo "（无踩坑记录）"
 
 ---
 
-## Step 4: 写代码 + 自测
+## Step 4: 写代码 + 写测试
 
-写完代码后，执行 DoD 中的 TEST：
+### 4.1 写功能代码
+
+根据 PRD 和 DoD 实现功能。
+
+### 4.2 写测试代码（必须！）
+
+**每个功能必须有对应的测试。**
+
+```
+DoD 里写的验收标准 → 变成测试代码
+
+例如：
+  DoD: "用户能登录"
+    ↓
+  测试: it('用户能登录', () => { ... })
+
+  DoD: "密码错误有提示"
+    ↓
+  测试: it('密码错误有提示', () => { ... })
+```
+
+**测试文件命名**：
+- `功能.ts` → `功能.test.ts`
+- 例：`login.ts` → `login.test.ts`
+
+**测试要求**：
+- 必须有断言（expect）
+- 覆盖核心功能路径
+- 覆盖主要边界情况
+
+### 4.3 本地跑测试
 
 ```bash
-echo "=== 自测 ==="
-# 执行每个 TEST
-# 全部通过才继续
+echo "=== 本地测试 ==="
+npm test
+
+# 必须全绿才能继续
+# 红了就修，不能跳过
 ```
+
+**Hook 强制**：PR 创建前会自动跑 `npm test`，不过不能提交。
 
 ---
 
-## Step 5: PR + 等待 CI
+## Step 5: 提交 PR
 
 ### 5.1 会话恢复检测
 
@@ -277,62 +311,128 @@ echo "✅ PR 已创建: $PR_URL"
 echo "⏳ 等待 CI..."
 ```
 
-### 5.4 等待 CI 循环
+---
+
+## Step 5.5: 质检闭环
+
+**PR 创建后，进入质检循环。**
+
+### 5.5.1 质检循环逻辑
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                      质检闭环                                │
+└─────────────────────────────────────────────────────────────┘
+
+PR 创建
+    │
+    ▼
+┌─────────────────────────────────────────────────────────────┐
+│  轮询检查（每 30 秒）：                                       │
+│    1. CI 状态                                               │
+│    2. Codex review 评论                                     │
+└─────────────────────────────────────────────────────────────┘
+    │
+    ├── PR 已合并 → 完成 ✅
+    │
+    ├── CI 失败 → 读错误 → 修复 → 重新 push → 继续轮询
+    │
+    ├── Codex 有问题反馈 → 读评论 → 修复 → 重新 push → 继续轮询
+    │
+    └── CI 通过 + Codex 没问题 → 等待自动合并
+```
+
+### 5.5.2 轮询代码
 
 ```bash
-MAX_WAIT=180
+MAX_WAIT=300  # 5 分钟
 WAITED=0
+PR_NUMBER=$(echo "$PR_URL" | grep -oE '[0-9]+$')
 
 while [ $WAITED -lt $MAX_WAIT ]; do
-  sleep 10
-  WAITED=$((WAITED + 10))
+  sleep 30
+  WAITED=$((WAITED + 30))
 
-  # 获取 PR 状态（降级处理：如果 statusCheckRollup 权限不足，只用 state）
+  # 1. 获取 PR 状态
   STATE=$(gh pr view "$PR_URL" --json state -q '.state' 2>/dev/null || echo "UNKNOWN")
-
-  # 尝试获取 CI 状态（可能因权限失败）
-  CI_STATUS=$(gh pr view "$PR_URL" --json statusCheckRollup -q '.statusCheckRollup[0].conclusion // "PENDING"' 2>/dev/null || echo "UNKNOWN")
 
   if [ "$STATE" = "MERGED" ]; then
     echo "✅ PR 已合并！(${WAITED}s)"
     break
-  elif [ "$STATE" = "CLOSED" ]; then
-    echo "❌ PR 被关闭"
-    echo ""
-    echo "可能原因："
-    echo "  - 合并冲突"
-    echo "  - 手动关闭"
-    echo "  - 权限问题"
-    echo ""
-    echo "解决方案："
-    echo "  1. 重新推送并创建 PR: git push && gh pr create --base $FEATURE_BRANCH"
-    echo "  2. 或放弃本次任务"
-    break
-  elif [ "$CI_STATUS" = "FAILURE" ]; then
-    echo "❌ CI 失败，请检查: $PR_URL"
-    echo "修复后重新 push，CI 会自动重跑"
-    break
   fi
 
-  # 显示状态（CI_STATUS 可能是 UNKNOWN）
-  if [ "$CI_STATUS" = "UNKNOWN" ]; then
-    echo "⏳ 等待中... STATE=$STATE (${WAITED}s)"
-  else
-    echo "⏳ 等待中... STATE=$STATE, CI=$CI_STATUS (${WAITED}s)"
+  # 2. 检查 CI 状态
+  CI_FAILED=$(gh pr checks "$PR_NUMBER" 2>/dev/null | grep -c "fail" || echo "0")
+
+  if [ "$CI_FAILED" -gt 0 ]; then
+    echo "❌ CI 失败，开始修复..."
+    # 读取 CI 错误日志
+    # 修复代码
+    # git add && git commit && git push
+    # 继续轮询
+    continue
   fi
+
+  # 3. 检查 Codex 评论
+  CODEX_COMMENT=$(gh api repos/:owner/:repo/issues/$PR_NUMBER/comments \
+    --jq '.[] | select(.user.login == "chatgpt-codex-connector[bot]") | .body' \
+    2>/dev/null | tail -1)
+
+  if [[ "$CODEX_COMMENT" == *"issue"* ]] || [[ "$CODEX_COMMENT" == *"problem"* ]]; then
+    echo "⚠️ Codex 发现问题，开始修复..."
+    echo "   评论内容: $CODEX_COMMENT"
+    # 根据 Codex 反馈修复代码
+    # git add && git commit && git push
+    # 继续轮询
+    continue
+  fi
+
+  echo "⏳ 等待中... STATE=$STATE (${WAITED}s)"
 done
+```
 
-# 超时处理
-if [ $WAITED -ge $MAX_WAIT ] && [ "$STATE" != "MERGED" ]; then
-  echo "⏰ 等待超时（${MAX_WAIT}s）"
-  echo "   请手动检查 PR 状态: $PR_URL"
-  echo ""
-  echo "   ⚠️ 不要执行 cleanup！"
-  echo "   CI 通过后会自动合并，稍后运行 /dev 继续"
-  echo ""
-  # 超时后不执行 cleanup，等下次 /dev 恢复
-  exit 0
-fi
+### 5.5.3 修复逻辑
+
+**CI 失败时**：
+```bash
+# 1. 读取 CI 错误
+gh run view --log-failed
+
+# 2. 分析错误，修复代码
+
+# 3. 重新提交
+git add -A
+git commit -m "fix: 修复 CI 错误"
+git push
+
+# 4. 继续轮询，CI 会自动重跑
+```
+
+**Codex 有问题时**：
+```bash
+# 1. 读取 Codex 评论
+CODEX_FEEDBACK=$(gh api repos/:owner/:repo/issues/$PR_NUMBER/comments \
+  --jq '.[] | select(.user.login == "chatgpt-codex-connector[bot]") | .body' \
+  | tail -1)
+
+# 2. 根据反馈修复代码
+
+# 3. 重新提交
+git add -A
+git commit -m "fix: 根据 Codex review 修复"
+git push
+
+# 4. 继续轮询，Codex 会自动重新 review
+```
+
+### 5.5.4 完成条件
+
+```
+以下条件全部满足才算完成：
+
+✅ CI 全绿
+✅ Codex review 没有问题（或说 "no issues" / "LGTM"）
+✅ PR 已合并
 ```
 
 ---
