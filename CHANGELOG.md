@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [7.15.1] - 2026-01-17
+
+### Fixed
+- audit skill: 添加 YAML front matter 使 Claude Code 能正确发现和加载
+
 ## [7.15.0] - 2026-01-17
 
 ### Added
