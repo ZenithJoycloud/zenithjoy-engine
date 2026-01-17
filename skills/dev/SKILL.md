@@ -34,7 +34,8 @@ description: |
   □⏭ PRD 确认
   □⏭ DoD 确认
   □ 代码编写
-  □ 自测通过
+  □ 测试编写（必须！）
+  □ 本地测试通过（npm test）
 
 提交阶段 (Step 5)
   □⏭ 会话恢复检测
@@ -42,7 +43,11 @@ description: |
   □ git commit
   □ git push
   □ PR 创建
+
+质检阶段 (Step 5.5)
   □ CI 通过
+  □ Codex review 通过
+  □ 有问题则修复（闭环）
   □ PR 合并
 
 清理阶段 (Step 6)
@@ -106,10 +111,13 @@ Step 1: 检查当前分支
     └─ cp-*？ → 跳过 Step 2 → 直接 Step 3（继续任务）
     │
     ▼
-Step 2-4: 分支 → 上下文 → PRD/DoD → 写代码 → 自测
+Step 2-4: 分支 → 上下文 → PRD/DoD → 写代码 → 写测试 → 本地测试
     │
     ▼
-Step 5: 版本号 → commit → push → PR(→develop) → CI → merge
+Step 5: 版本号 → commit → push → PR(→develop)
+    │
+    ▼
+Step 5.5: CI + Codex review → 有问题则修复（闭环）→ merge
     │
     ▼
 Step 6: Cleanup（仅 PR 合并后）
@@ -136,8 +144,9 @@ Step 7: Learn（可选）
 | 2 | 创建 cp-{时间戳}-{任务名} 分支 | → [STEPS.md#step-2](references/STEPS.md#step-2-创建-cp-分支) |
 | 2.5 | 回顾 CHANGELOG/PR/架构/踩坑 | → [STEPS.md#step-25](references/STEPS.md#step-25-上下文回顾) |
 | 3 | 生成 PRD + DoD，等用户确认 | → [STEPS.md#step-3](references/STEPS.md#step-3-prd-dod) |
-| 4 | 写代码，执行 DoD 中的 TEST | → [STEPS.md#step-4](references/STEPS.md#step-4-写代码-自测) |
-| 5 | 会话恢复检测 + 版本号 + PR + CI | → [STEPS.md#step-5](references/STEPS.md#step-5-pr-等待-ci) |
+| 4 | 写代码 + 写测试 + 本地跑测试 | → [STEPS.md#step-4](references/STEPS.md#step-4-写代码-写测试) |
+| 5 | 会话恢复检测 + 版本号 + PR 创建 | → [STEPS.md#step-5](references/STEPS.md#step-5-提交-pr) |
+| 5.5 | CI + Codex review + 闭环修复 | → [STEPS.md#step-55](references/STEPS.md#step-55-质检闭环) |
 | 6 | 清理 config/分支/远程 | → [STEPS.md#step-6](references/STEPS.md#step-6-cleanup) |
 | 6.5 | (可选) 同步其他 feature 分支 | `bash scripts/multi-feature.sh sync` |
 | 7 | 记录 Engine/项目经验 | → [STEPS.md#step-7](references/STEPS.md#step-7-双层-learn) |

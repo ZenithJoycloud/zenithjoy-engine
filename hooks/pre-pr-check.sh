@@ -61,8 +61,17 @@ fi
         fi
     fi
 
-    # 注意：test 交由 CI 负责，Hook 只检查 typecheck
-    # 这样可以加快 PR 创建速度，避免重复检查
+    # 2. 运行 test（如果有这个 script）
+    if grep -q '"test"' "$PROJECT_ROOT/package.json"; then
+        echo "  → npm run test..." >&2
+        if ! npm run test >/dev/null 2>&1; then
+            echo "  ❌ test 失败" >&2
+            echo "     运行: npm run test 查看详情" >&2
+            FAILED=1
+        else
+            echo "  ✅ test 通过" >&2
+        fi
+    fi
 
     echo "" >&2
 
