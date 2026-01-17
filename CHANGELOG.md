@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [7.19.0] - 2026-01-17
+
+### Changed
+- /dev 流程重构：步骤编号从小数点改为整数 1-10
+- 每步一个文件：`skills/dev/steps/01-prepare.md` ~ `10-cleanup.md`
+- SKILL.md 精简为入口索引
+- 删除旧的 `references/STEPS.md`
+
+### 架构改进
+- 修改某步骤只需改对应文件
+- 增删步骤只需增删文件
+- 减少上下文开销
+
 ## [7.18.0] - 2026-01-17
 
 ### Added
