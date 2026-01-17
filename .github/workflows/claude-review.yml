@@ -24,10 +24,15 @@ jobs:
         with:
           fetch-depth: 0
 
+      # 使用 Max 订阅的 OAuth 认证（自动刷新 token）
       - name: Claude Code Review
-        uses: anthropics/claude-code-action@v1
+        uses: grll/claude-code-action@beta
         with:
-          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          use_oauth: "true"
+          claude_access_token: ${{ secrets.CLAUDE_ACCESS_TOKEN }}
+          claude_refresh_token: ${{ secrets.CLAUDE_REFRESH_TOKEN }}
+          claude_expires_at: ${{ secrets.CLAUDE_EXPIRES_AT }}
+          secrets_admin_pat: ${{ secrets.SECRETS_ADMIN_PAT }}
           prompt: |
             Review this PR for:
             1. Code quality and best practices
