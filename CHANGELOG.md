@@ -7,6 +7,118 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [7.41.0] - 2026-01-18
+
+### Fixed
+- **[P0]** `project-detect.sh`: 使用 `json_escape` 处理 PACKAGES 数组序列化，防止包名含引号破坏 JSON
+- **[P0]** `cleanup.sh`: checkout 失败后跳过 git pull 和后续危险操作
+- **[P1]** `cleanup.sh`: git pull 失败后检查 MERGING 状态，防止在冲突状态下继续操作
+- **[P1]** `pr-gate.sh`: Shell 语法检查失败时显示具体文件和错误信息
+- **[P1]** `pr-gate.sh`: feature/* 分支也执行步骤检查和回退逻辑
+- **[P1]** `wait-for-merge.sh`: 正确处理 jq 返回的 null 值（字符串 "null"）
+- **[P1]** `SKILL.md`: 补充 Step 8 PR 可能被 Hook 拦截的说明
+- **[P1]** `07-quality.md`: 明确"质检三层"（Layer 1/2/3）与"流程步骤"（Step 5/6/7）的区别
+- **[P1]** `CHANGELOG.md`: 补全 7.37.6-7.40.1 版本链接，修复 [Unreleased] 指向
+
+## [7.40.1] - 2026-01-18
+
+### Fixed
+- **[HIGH]** `pr-gate.sh`: 检查 `.quality-report.json` 的 `branch` 字段是否匹配当前分支，防止旧报告绕过检查
+- **[HIGH]** `cleanup.sh`: 删除 `.quality-report.json`，防止残留影响下次开发
+- **[HIGH]** `branch-protect.sh`: 新分支首次写代码时，自动清理旧分支的质检报告
+
+## [7.40.0] - 2026-01-18
+
+### Fixed
+- **[CRITICAL]** 从 git 移除 node_modules（1038 个文件，占仓库 95%）
+- **[CRITICAL]** `project-detect.sh`: 添加 JSON 字符串转义，防止项目名含引号时破坏 JSON
+- **[CRITICAL]** `project-detect.sh`: 修复 for 循环缩进，Monorepo 依赖图生成逻辑正确
+- **[HIGH]** `session-init.sh`: 修复步骤映射错位，"下一步"提示与 11 步流程对齐
+- **[HIGH]** `.git/hooks/pre-commit`: 修复新分支无上游时的语法错误
+- `.gitignore`: 添加生成文件忽略（.project-info.json, .dev-step, .quality-report.json, .test-level.json）
+
+### Changed
+- 版本号跳跃到 7.40.0 标记重大修复（仓库瘦身 95%）
+
+## [7.39.4] - 2026-01-18
+
+### Fixed
+- `VALIDATION.md`: 重写步骤映射表，对齐 11 步流程（被 .gitignore 忽略的本地文件）
+- `stop-gate.sh`: 重构为统一的 case 语句，覆盖 step 0-11
+- `03-branch.md`: 修正 L142 "下一步: Step 4 (写代码)" → "Step 4 (DoD)"
+- `cleanup.sh`: 统一步骤编号注释（5.5→6, 6→7, 7→8, 8→9）
+- `02-detect.md`: 修正 L118-127 步骤引用（Step 5/6 → Step 6/7）
+
+## [7.39.3] - 2026-01-18
+
+### Fixed
+- `stop-gate.sh`: 重写步骤定义为 11 步流程
+- `wait-for-merge.sh`: 修复回退逻辑（step 3→4，循环 4→5→6 改为 5→6→7）
+- `check.sh`: 修复 Step 10→11（Cleanup 是 Step 11）
+- `session-init.sh`: 添加 step 11 处理（任务完成）
+- `cleanup.sh`: 修正步骤序号注释（9→10）
+- `VALIDATION.md`: 更新为 11 步流程
+- `ARCHITECTURE.md`: 修正 Step 10 描述（Learning 必须，Cleanup 是 Step 11）
+
+## [7.39.2] - 2026-01-18
+
+### Fixed
+- 修复失败返回逻辑描述：统一为"返回 Step 4"（而非 Step 5）
+  - `skills/dev/steps/07-quality.md`: 所有失败场景改为"返回 Step 4 重新开始"，循环描述为"5→6→7"
+  - `skills/dev/steps/09-ci.md`: CI 失败回退改为"回退 step 4"，循环描述为"5→6→7"
+  - `skills/dev/SKILL.md`: 失败返回逻辑改为"返回 Step 4（从 Step 5 重新开始，5→6→7 循环）"
+- 逻辑说明：失败时 pr-gate.sh 设置 step=4（DoD 完成），然后从 Step 5（写代码）重新开始，循环为 5→6→7
+
+## [7.39.1] - 2026-01-18
+
+### Fixed
+- `branch-protect.sh`: 更新步骤编号为 11 步（step >= 4 才能写代码）
+- `pr-gate.sh`: 更新步骤编号（step >= 7 才能提 PR，回退到 step 4）
+- `03-branch.md`: 修正 step 说明
+
+## [7.39.0] - 2026-01-18
+
+### Changed
+- 重构 /dev 开发流程为 11 步（原 10 步）
+  - Step 1: PRD 确定（有头/无头两入口）
+  - Step 2: 检测项目环境
+  - Step 3: 创建分支
+  - Step 4: 推演 DoD
+  - Step 5: 写代码
+  - Step 6: 写测试
+  - Step 7: 质检（三层）
+  - Step 8: 提交 PR
+  - Step 9: CI（绿自动合并）
+  - Step 10: Learning（必须记录）
+  - Step 11: Cleanup
+
+### Added
+- `01-prd.md`: PRD 模板新增"成功标准"字段
+- `02-detect.md`: 项目环境检测步骤
+- `03-branch.md`: 分支创建步骤
+- `07-quality.md`: 三层质检人话版（typecheck/lint/test 解释）
+- `10-learning.md`: 必须记录 bug、优化点、影响程度
+
+### Fixed
+- 失败返回逻辑：Step 7 质检/Step 9 CI 失败返回 Step 5
+- `cleanup.sh`: 更新 step 编号为 11
+- `session-init.sh`: 更新步骤提示为 11 步
+
+## [7.38.0] - 2026-01-18
+
+### Added
+- 三层质检体系：重构 Step 6 本地测试为系统化质检流程
+  - 6.1 自动化测试：机器跑（typecheck, test, lint, build, shell）
+  - 6.2 效果验证：Claude 主动验证（截图/curl/执行）
+  - 6.3 需求验收：对照 DoD 逐项打勾
+- `quality-loop.md`: 新增质检循环 Agent 定义
+- `.quality-report.json`: 三层质检报告格式
+
+### Changed
+- `06-local-test.md`: 重写为三层质检文档
+- `03-dod.md`: 添加 DoD → 质检映射规则（TEST→6.1, CHECK→6.2）
+- `pr-gate.sh`: 新增三层质检报告检查
+
 ## [7.37.7] - 2026-01-18
 
 ### Fixed
@@ -801,7 +913,18 @@ CI: 最终验证
 
 Previous iterations were experimental development versions leading up to the 7.0.0 stable release.
 
-[Unreleased]: https://github.com/perfectuser21/zenithjoy-engine/compare/v7.37.5...HEAD
+[Unreleased]: https://github.com/perfectuser21/zenithjoy-engine/compare/v7.41.0...HEAD
+[7.41.0]: https://github.com/perfectuser21/zenithjoy-engine/compare/v7.40.1...v7.41.0
+[7.40.1]: https://github.com/perfectuser21/zenithjoy-engine/compare/v7.40.0...v7.40.1
+[7.40.0]: https://github.com/perfectuser21/zenithjoy-engine/compare/v7.39.4...v7.40.0
+[7.39.4]: https://github.com/perfectuser21/zenithjoy-engine/compare/v7.39.3...v7.39.4
+[7.39.3]: https://github.com/perfectuser21/zenithjoy-engine/compare/v7.39.2...v7.39.3
+[7.39.2]: https://github.com/perfectuser21/zenithjoy-engine/compare/v7.39.1...v7.39.2
+[7.39.1]: https://github.com/perfectuser21/zenithjoy-engine/compare/v7.39.0...v7.39.1
+[7.39.0]: https://github.com/perfectuser21/zenithjoy-engine/compare/v7.38.0...v7.39.0
+[7.38.0]: https://github.com/perfectuser21/zenithjoy-engine/compare/v7.37.7...v7.38.0
+[7.37.7]: https://github.com/perfectuser21/zenithjoy-engine/compare/v7.37.6...v7.37.7
+[7.37.6]: https://github.com/perfectuser21/zenithjoy-engine/compare/v7.37.5...v7.37.6
 [7.37.5]: https://github.com/perfectuser21/zenithjoy-engine/compare/v7.37.4...v7.37.5
 [7.12.1]: https://github.com/perfectuser21/zenithjoy-engine/compare/v7.12.0...v7.12.1
 [7.12.0]: https://github.com/perfectuser21/zenithjoy-engine/compare/v7.11.1...v7.12.0

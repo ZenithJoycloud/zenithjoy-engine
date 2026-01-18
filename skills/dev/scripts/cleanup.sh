@@ -61,11 +61,19 @@ fi
 # ========================================
 echo ""
 echo "2️⃣  拉取最新代码..."
-if git pull origin "$BASE_BRANCH" 2>/dev/null; then
+if [[ $CHECKOUT_FAILED -eq 1 ]]; then
+    echo -e "   ${YELLOW}⚠️  跳过（checkout 失败，不在目标分支）${NC}"
+elif git pull origin "$BASE_BRANCH" 2>/dev/null; then
     echo -e "   ${GREEN}✅ 已同步最新代码${NC}"
 else
     echo -e "   ${YELLOW}⚠️  拉取失败，可能有冲突${NC}"
     WARNINGS=$((WARNINGS + 1))
+    # 检查是否处于 MERGING 状态
+    if [[ -f "$(git rev-parse --git-dir)/MERGE_HEAD" ]]; then
+        echo -e "   ${RED}❌ 检测到未完成的合并，需要手动解决${NC}"
+        echo -e "   → 运行 'git merge --abort' 取消合并，或手动解决冲突"
+        FAILED=1
+    fi
 fi
 
 # ========================================
@@ -124,10 +132,10 @@ else
 fi
 
 # ========================================
-# 5.5. 删除 .project-info.json 缓存
+# 6. 删除 .project-info.json 缓存
 # ========================================
 echo ""
-echo "5.5️⃣ 删除 .project-info.json 缓存..."
+echo "6️⃣  删除 .project-info.json 缓存..."
 if [[ -f ".project-info.json" ]]; then
     if rm -f ".project-info.json" 2>/dev/null; then
         echo -e "   ${GREEN}✅ 已删除 .project-info.json${NC}"
@@ -140,10 +148,10 @@ else
 fi
 
 # ========================================
-# 6. 清理 stale remote refs
+# 7. 清理 stale remote refs
 # ========================================
 echo ""
-echo "6️⃣  清理 stale remote refs..."
+echo "7️⃣  清理 stale remote refs..."
 PRUNED=$(git remote prune origin 2>&1 || true)
 if echo "$PRUNED" | grep -q "pruning"; then
     echo -e "   ${GREEN}✅ 已清理 stale refs${NC}"
@@ -152,10 +160,10 @@ else
 fi
 
 # ========================================
-# 7. 检查未提交的文件
+# 8. 检查未提交的文件
 # ========================================
 echo ""
-echo "7️⃣  检查未提交文件..."
+echo "8️⃣  检查未提交文件..."
 UNCOMMITTED=$(git status --porcelain 2>/dev/null | grep -v "node_modules" | head -5 || true)
 if [[ -n "$UNCOMMITTED" ]]; then
     echo -e "   ${YELLOW}⚠️  有未提交的文件:${NC}"
@@ -166,10 +174,26 @@ else
 fi
 
 # ========================================
-# 8. 检查是否有其他 cp-* 分支遗留
+# 9. 删除 .quality-report.json（防止残留影响下次）
 # ========================================
 echo ""
-echo "8️⃣  检查其他遗留的 cp-* 分支..."
+echo "9️⃣  删除 .quality-report.json..."
+if [[ -f ".quality-report.json" ]]; then
+    if rm -f ".quality-report.json" 2>/dev/null; then
+        echo -e "   ${GREEN}✅ 已删除 .quality-report.json${NC}"
+    else
+        echo -e "   ${YELLOW}⚠️  删除 .quality-report.json 失败${NC}"
+        WARNINGS=$((WARNINGS + 1))
+    fi
+else
+    echo -e "   ${GREEN}✅ .quality-report.json 已不存在${NC}"
+fi
+
+# ========================================
+# 10. 检查是否有其他 cp-* 分支遗留
+# ========================================
+echo ""
+echo "🔟 检查其他遗留的 cp-* 分支..."
 OTHER_CP=$(git branch --list "cp-*" 2>/dev/null | grep -v "^\*" || true)
 if [[ -n "$OTHER_CP" ]]; then
     echo -e "   ${YELLOW}⚠️  发现其他 cp-* 分支:${NC}"
@@ -180,18 +204,18 @@ else
 fi
 
 # ========================================
-# 9. 设置 step=10（标记 cleanup 完成）
+# 11. 设置 step=11（标记 cleanup 完成）
 # ========================================
 echo ""
-echo "9️⃣  设置 step=10..."
+echo "1️⃣1️⃣ 设置 step=11..."
 # 注意：此时 git config 可能已被清理，所以这里是为外部调用者记录状态
 # 如果分支已删除，则不再需要设置（分支和 config 都已清理）
 if git rev-parse --abbrev-ref HEAD 2>/dev/null | grep -q "^$CP_BRANCH$"; then
     # 如果仍在 cp 分支（不应该发生），尝试设置
-    git config "branch.$CP_BRANCH.step" 10 2>/dev/null || true
-    echo -e "   ${YELLOW}⚠️  仍在 cp 分支，已设置 step=10${NC}"
+    git config "branch.$CP_BRANCH.step" 11 2>/dev/null || true
+    echo -e "   ${YELLOW}⚠️  仍在 cp 分支，已设置 step=11${NC}"
 else
-    echo -e "   ${GREEN}✅ step=10（cleanup 完成）${NC}"
+    echo -e "   ${GREEN}✅ step=11（cleanup 完成）${NC}"
 fi
 
 # ========================================

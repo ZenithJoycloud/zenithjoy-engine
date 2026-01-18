@@ -1,0 +1,117 @@
+# Step 10: Learning
+
+> 记录开发经验（必须步骤）
+
+**前置条件**：step >= 9（CI 通过/已合并）
+**完成后设置状态**：
+```bash
+git config branch."$BRANCH_NAME".step 10
+```
+
+---
+
+## 为什么必须记录？
+
+每次开发都是一次学习机会：
+- 遇到的 Bug 可能会再次出现
+- 优化点积累形成最佳实践
+- 影响程度帮助优先级决策
+
+**不记录 = 重复踩坑**
+
+---
+
+## 记录位置
+
+### Engine 层面
+工作流本身有什么可以改进的？
+- /dev 流程哪里不顺畅？
+- 缺少什么检查步骤？
+- 脚本有什么 bug？
+
+记录到：`zenithjoy-engine/docs/LEARNINGS.md`
+
+### 项目层面
+目标项目开发中的发现：
+- 踩了什么坑？
+- 学到了什么技术点？
+- 有什么架构优化建议？
+
+记录到：项目的 `docs/LEARNINGS.md`
+
+---
+
+## 记录模板
+
+```markdown
+### [YYYY-MM-DD] <任务简述>
+- **Bug**: <遇到的问题和解决方案>
+- **优化点**: <可改进的地方和具体建议>
+- **影响程度**: Low/Medium/High
+```
+
+### 影响程度说明
+
+- **Low**: 体验小问题，不影响功能
+- **Medium**: 功能性问题，需要尽快修复
+- **High**: 阻塞性问题，必须立即处理
+
+---
+
+## 实际操作
+
+1. **回顾本次开发**
+   - 有遇到什么意外的 bug 吗？
+   - 有什么地方可以做得更好？
+   - 这些问题/优化会影响到未来吗？
+
+2. **追加到对应的 LEARNINGS.md**
+   ```bash
+   # Engine 层面
+   echo "" >> zenithjoy-engine/docs/LEARNINGS.md
+   echo "### [$(date +%Y-%m-%d)] <任务简述>" >> zenithjoy-engine/docs/LEARNINGS.md
+   echo "- **Bug**: <描述>" >> zenithjoy-engine/docs/LEARNINGS.md
+   echo "- **优化点**: <描述>" >> zenithjoy-engine/docs/LEARNINGS.md
+   echo "- **影响程度**: Low/Medium/High" >> zenithjoy-engine/docs/LEARNINGS.md
+
+   # 项目层面（如果需要）
+   echo "" >> <项目路径>/docs/LEARNINGS.md
+   echo "### [$(date +%Y-%m-%d)] <任务简述>" >> <项目路径>/docs/LEARNINGS.md
+   # ...
+   ```
+
+3. **提交 Learning**
+   ```bash
+   git add docs/LEARNINGS.md
+   git commit -m "docs: 记录 <任务> 的开发经验"
+   git push
+   ```
+
+4. **设置 step 10**
+   ```bash
+   git config branch."$BRANCH_NAME".step 10
+   ```
+
+---
+
+## 没有特别的 Learning？
+
+即使本次开发很顺利，也至少记录：
+```markdown
+### [YYYY-MM-DD] <任务简述>
+- **Bug**: 无
+- **优化点**: 流程顺畅，无明显优化点
+- **影响程度**: N/A
+```
+
+**记录"没问题"本身也是有价值的信息**，证明这个流程/模式是可靠的。
+
+---
+
+## 完成条件
+
+- [ ] 至少有一条 Learning 记录（Engine 或项目层面）
+- [ ] Learning 已提交并推送
+- [ ] 设置了 step 10
+
+**完成后进入 Step 11: Cleanup**

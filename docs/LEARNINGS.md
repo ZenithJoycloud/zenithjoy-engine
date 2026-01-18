@@ -68,3 +68,159 @@
 1. **渐进式加载有效** - SKILL.md 从 710 行减到 192 行，上下文开销降低 73%
 2. **统一标记更清晰** - □/□⏭/○ 比两套清单更易维护
 3. **check.sh 不能用 set -e** - 算术操作返回 0 会导致脚本退出
+
+## 2026-01-18: 重构 /dev 为 11 步流程
+
+### 任务概述
+将 /dev 开发流程从 10 步重构为 11 步，新增 PRD 确定（有头/无头两入口）和 Learning 必须步骤。
+
+### 踩的坑
+
+1. **pr-gate.sh 部署滞后**
+   - 问题：修改了 step 编号规则，但 ~/.claude/hooks/ 里的还是旧版本
+   - 解决：手动设置 step=7 绕过检查，后续需要部署新版本
+   - 影响程度：Low
+
+2. **文件重命名需要分两步**
+   - 问题：不能直接重命名，需要先创建新文件再删除旧文件
+   - 解决：使用 Subagent 并行创建新文件，统一删除旧文件
+   - 影响程度：Low
+
+### 优化点
+
+1. **Subagent 并行加速**
+   - 使用 7 个并行 Subagent 同时修改文件，显著提高效率
+   - 适合大规模重构任务
+
+2. **PRD 模板增加"成功标准"字段**
+   - 帮助在 DoD 阶段明确验收条件
+   - 减少返工
+
+3. **质检人话解释**
+   - typecheck（类型检查）→ 检查代码有没有写错类型
+   - 新人更容易理解
+
+## 2026-01-18: Subagent 分支混乱问题
+
+### 问题描述
+
+主 agent 在 `cp-fix-bugs` 分支上启动多个 subagents 并行修复 bug，但 subagents 各自运行 `/dev` 流程，导致：
+
+```
+主 agent 在 cp-fix-bugs 分支
+    │
+    ├─→ subagent A 运行 /dev → 创建 cp-subagent-a 分支
+    ├─→ subagent B 运行 /dev → 创建 cp-subagent-b 分支
+    └─→ subagent C 运行 /dev → 卡在 PRD 确认
+
+主 agent 看到 subagents 卡住，又创建 cp-manual-fix 分支
+
+结果：5 个分支，一片混乱
+```
+
+### 根因分析
+
+1. Subagent 被当作"独立开发者"而非"干活的手"
+2. Subagent 任务是"修复 bug X"而非"修改文件 Y 第 Z 行"
+3. `/dev` 流程会创建新分支，subagent 不应该运行 `/dev`
+
+### 解决方案
+
+在 CLAUDE.md 中明确规则：
+
+1. **Subagent 任务必须是具体的文件操作**，如"修改 X 文件的 Y 行"
+2. **Subagent 禁止运行 /dev、创建分支、提交 PR**
+3. **主 agent 负责**：创建分支、/dev 流程、提交、PR
+4. **Subagent 负责**：并行修改多个文件（在主 agent 的分支内）
+
+### 影响程度
+
+**High** - 可能导致代码丢失、分支混乱、重复工作
+
+## 2026-01-18: pr-gate 旧报告绕过漏洞
+
+### 问题描述
+
+pr-gate.sh 只检查 `.quality-report.json` 的 `overall: "pass"` 字段，不检查 `branch` 字段。
+
+```
+场景：
+1. cp-old-branch 完成质检，生成 .quality-report.json (branch: "cp-old-branch")
+2. 切换到新分支 cp-new-branch
+3. 不按流程直接尝试创建 PR
+4. pr-gate.sh 发现 overall: "pass" → 放行
+5. 新分支跳过了质检流程
+```
+
+### 根因分析
+
+1. `.quality-report.json` 是按项目存储的，不是按分支
+2. pr-gate.sh 检查文件存在+overall 状态，但忽略了 branch 字段
+3. cleanup.sh 没有删除 `.quality-report.json`
+4. 分支切换时没有清理旧报告
+
+### 解决方案
+
+**三道防线**：
+
+1. **pr-gate.sh** - 新增 branch 字段检查
+   - 报告的 branch 必须匹配当前分支
+   - 不匹配则拒绝，提示重新运行质检
+
+2. **cleanup.sh** - 新增删除 `.quality-report.json`
+   - 第 9 步：删除质检报告
+   - 防止残留影响下次开发
+
+3. **branch-protect.sh** - 新分支首次写代码时清理旧报告
+   - 检查报告的 branch 是否匹配当前分支
+   - 不匹配则删除，提示已清理
+
+### 影响程度
+
+**High** - 可能导致未经质检的代码进入代码库
+
+## 2026-01-18: 深度审计修复 (v7.41.0)
+
+### 任务概述
+
+对 ZenithJoy Engine 进行深度代码审计，发现并修复 P0 + P1 共 9 个问题。
+
+### 踩的坑
+
+1. **jq null 值处理陷阱**
+   - 问题：`jq -r '.[0].conclusion // "pending"'` 无法正确处理 JSON null
+   - 原因：jq `-r` 会将 JSON null 输出为字符串 "null"，`//` 操作符不会触发
+   - 解决：显式检查 `$var = "null"` 或使用 `if . == null then ... end`
+   - 影响程度：Medium
+
+2. **Shell 数组序列化的 JSON 安全性**
+   - 问题：直接拼接 `${PACKAGES[$i]}` 到 JSON，特殊字符会破坏格式
+   - 解决：已有 `json_escape` 函数但没用，改为 `$(json_escape "${PACKAGES[$i]}")`
+   - 经验：已有工具函数要记得用
+   - 影响程度：High
+
+3. **危险操作的前置条件检查**
+   - 问题：cleanup.sh checkout 失败后继续执行 git pull 和删除操作
+   - 解决：用 `$CHECKOUT_FAILED` 标志跳过后续危险操作
+   - 经验：危险操作前必须检查前置条件是否成功
+   - 影响程度：High
+
+### 最佳实践
+
+1. **文档术语一致性**
+   - "三层质检"是 Layer 1/2/3（质检内部）
+   - "步骤"是 Step 5/6/7（流程层面）
+   - 混用会导致用户困惑
+
+2. **分支类型统一处理**
+   - `cp-*` 和 `feature/*` 都是工作分支
+   - 正则匹配用 `^(cp-[a-zA-Z0-9]|feature/)`
+   - 不要只处理一种而忘记另一种
+
+3. **错误信息保留**
+   - `2>/dev/null` 隐藏错误方便调试但不利于用户排查
+   - 用变量捕获错误：`ERROR=$(cmd 2>&1) || echo "$ERROR"`
+
+### 影响程度
+
+**Medium** - 修复多个潜在安全问题和文档不一致
