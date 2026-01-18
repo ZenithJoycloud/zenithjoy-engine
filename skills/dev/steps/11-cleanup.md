@@ -1,11 +1,11 @@
-# Step 10: Cleanup
+# Step 11: Cleanup
 
-> 清理分支 + 可选 Learn
+> 清理分支和配置
 
-**前置条件**：step >= 9（已合并）
+**前置条件**：step >= 10（Learning 完成）
 **完成后设置状态**：
 ```bash
-git config branch."$BRANCH_NAME".step 10
+git config branch."$BRANCH_NAME".step 11
 ```
 
 ---
@@ -26,7 +26,7 @@ bash skills/dev/scripts/cleanup.sh "$BRANCH_NAME" "$BASE_BRANCH"
 7. 清理 stale remote refs
 8. 检查未提交文件
 9. 检查其他遗留 cp-* 分支
-10. 设置 step=10（标记完成）
+10. 设置 step=11（标记完成）
 
 ---
 
@@ -53,27 +53,10 @@ git push origin --delete "$BRANCH_NAME" 2>/dev/null || true
 
 # 清理 stale refs
 git remote prune origin 2>/dev/null || true
+
+# 设置 step 11
+git config branch."$BRANCH_NAME".step 11
 ```
-
----
-
-## 可选：Learn
-
-**完成开发后，记录经验（可选）**：
-
-### Engine 层面
-工作流有什么可以改进的？
-- /dev 流程哪里不顺？
-- 缺少什么步骤？
-
-如果有，追加到 `zenithjoy-engine/docs/LEARNINGS.md`
-
-### 项目层面
-目标项目有什么值得记录的？
-- 踩了什么坑？
-- 学到了什么？
-
-如果有，追加到项目的 `docs/LEARNINGS.md`
 
 ---
 

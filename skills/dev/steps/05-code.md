@@ -1,11 +1,11 @@
-# Step 4: 写代码
+# Step 5: 写代码
 
 > 根据 PRD 实现功能代码
 
-**前置条件**：step >= 3
+**前置条件**：step >= 4
 **完成后设置状态**：
 ```bash
-git config branch."$BRANCH_NAME".step 4
+git config branch."$BRANCH_NAME".step 5
 ```
 
 ---

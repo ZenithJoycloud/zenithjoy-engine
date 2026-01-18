@@ -7,6 +7,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [7.39.0] - 2026-01-18
+
+### Changed
+- 重构 /dev 开发流程为 11 步（原 10 步）
+  - Step 1: PRD 确定（有头/无头两入口）
+  - Step 2: 检测项目环境
+  - Step 3: 创建分支
+  - Step 4: 推演 DoD
+  - Step 5: 写代码
+  - Step 6: 写测试
+  - Step 7: 质检（三层）
+  - Step 8: 提交 PR
+  - Step 9: CI（绿自动合并）
+  - Step 10: Learning（必须记录）
+  - Step 11: Cleanup
+
+### Added
+- `01-prd.md`: PRD 模板新增"成功标准"字段
+- `02-detect.md`: 项目环境检测步骤
+- `03-branch.md`: 分支创建步骤
+- `07-quality.md`: 三层质检人话版（typecheck/lint/test 解释）
+- `10-learning.md`: 必须记录 bug、优化点、影响程度
+
+### Fixed
+- 失败返回逻辑：Step 7 质检/Step 9 CI 失败返回 Step 5
+- `cleanup.sh`: 更新 step 编号为 11
+- `session-init.sh`: 更新步骤提示为 11 步
+
 ## [7.38.0] - 2026-01-18
 
 ### Added
