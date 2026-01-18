@@ -1,11 +1,11 @@
-# Step 5: 写测试
+# Step 6: 写测试
 
 > 每个功能必须有对应的测试
 
-**前置条件**：step >= 4
+**前置条件**：step >= 5
 **完成后设置状态**：
 ```bash
-git config branch."$BRANCH_NAME".step 5
+git config branch."$BRANCH_NAME".step 6
 ```
 
 ---

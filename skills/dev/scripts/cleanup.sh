@@ -180,18 +180,18 @@ else
 fi
 
 # ========================================
-# 9. 设置 step=10（标记 cleanup 完成）
+# 9. 设置 step=11（标记 cleanup 完成）
 # ========================================
 echo ""
-echo "9️⃣  设置 step=10..."
+echo "🔟 设置 step=11..."
 # 注意：此时 git config 可能已被清理，所以这里是为外部调用者记录状态
 # 如果分支已删除，则不再需要设置（分支和 config 都已清理）
 if git rev-parse --abbrev-ref HEAD 2>/dev/null | grep -q "^$CP_BRANCH$"; then
     # 如果仍在 cp 分支（不应该发生），尝试设置
-    git config "branch.$CP_BRANCH.step" 10 2>/dev/null || true
-    echo -e "   ${YELLOW}⚠️  仍在 cp 分支，已设置 step=10${NC}"
+    git config "branch.$CP_BRANCH.step" 11 2>/dev/null || true
+    echo -e "   ${YELLOW}⚠️  仍在 cp 分支，已设置 step=11${NC}"
 else
-    echo -e "   ${GREEN}✅ step=10（cleanup 完成）${NC}"
+    echo -e "   ${GREEN}✅ step=11（cleanup 完成）${NC}"
 fi
 
 # ========================================

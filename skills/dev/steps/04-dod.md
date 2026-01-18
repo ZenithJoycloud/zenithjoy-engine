@@ -1,15 +1,15 @@
-# Step 3: DoD
+# Step 4: DoD
 
 > 定义验收标准（Definition of Done）+ 测试层级确认
 
 **完成后设置状态**（这步完成后才能写代码）：
 ```bash
-git config branch."$BRANCH_NAME".step 3
+git config branch."$BRANCH_NAME".step 4
 ```
 
 ---
 
-## 3.1 自动扫描层级
+## 4.1 自动扫描层级
 
 根据需求描述**自动推断**需要的质检层级。
 
@@ -75,7 +75,7 @@ fi
 
 ---
 
-## 3.2 DoD 模板
+## 4.2 DoD 模板
 
 ```markdown
 ## DoD - 验收标准
@@ -95,7 +95,7 @@ fi
 
 ---
 
-## 3.3 示例
+## 4.3 示例
 
 ```markdown
 ## DoD - 用户登录功能
@@ -116,14 +116,14 @@ fi
 
 ---
 
-## 3.4 PRD + DoD 确认后
+## 4.4 PRD + DoD 确认后
 
 **用户确认后，设置步骤状态**：
 
 ```bash
 BRANCH_NAME=$(git rev-parse --abbrev-ref HEAD)
-git config branch."$BRANCH_NAME".step 3
-echo "✅ Step 3 完成 (DoD 确认)，可以开始写代码"
+git config branch."$BRANCH_NAME".step 4
+echo "✅ Step 4 完成 (DoD 确认)，可以开始写代码"
 ```
 
-**Hook 检查**：step >= 3 才能写代码。
+**Hook 检查**：step >= 4 才能写代码。

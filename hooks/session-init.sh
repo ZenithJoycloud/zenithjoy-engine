@@ -55,20 +55,21 @@ if [[ "$CURRENT_BRANCH" =~ ^cp-[a-zA-Z0-9] ]]; then
 
     echo ""
     echo -e "${YELLOW}⚡ 进行中的任务${NC}"
-    echo "   Step: $CURRENT_STEP/10"
+    echo "   Step: $CURRENT_STEP/11"
     echo "   Base: $BASE_BRANCH"
 
     # 提示下一步
     case $CURRENT_STEP in
-        0|1) echo "   → 下一步: PRD 确认" ;;
-        2) echo "   → 下一步: DoD 确认" ;;
-        3) echo "   → 下一步: 写代码" ;;
-        4) echo "   → 下一步: 写测试" ;;
-        5) echo "   → 下一步: 跑测试" ;;
-        6) echo "   → 下一步: 提交 PR" ;;
-        7) echo "   → 下一步: 等 CI" ;;
-        8) echo "   → 下一步: 合并" ;;
-        9) echo "   → 下一步: Cleanup" ;;
+        0|1) echo "   → 下一步: 检测项目环境" ;;
+        2) echo "   → 下一步: 创建分支" ;;
+        3) echo "   → 下一步: 推演 DoD" ;;
+        4) echo "   → 下一步: 写代码" ;;
+        5) echo "   → 下一步: 写测试" ;;
+        6) echo "   → 下一步: 质检" ;;
+        7) echo "   → 下一步: 提交 PR" ;;
+        8) echo "   → 下一步: 等 CI" ;;
+        9) echo "   → 下一步: Learning" ;;
+        10) echo "   → 下一步: Cleanup" ;;
     esac
 fi
 
