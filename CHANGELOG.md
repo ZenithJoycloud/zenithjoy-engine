@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [7.44.0] - 2026-01-19
+
+### Added
+- Simple ping utility function in src/utils/ping.ts
+
 ## [7.43.0] - 2026-01-19
 
 ### Added
