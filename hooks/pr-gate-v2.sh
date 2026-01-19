@@ -272,11 +272,12 @@ if [[ -f "$L2_EVIDENCE_FILE" ]]; then
 
             echo -n "  curl $CID... " >&2
             CHECKED=$((CHECKED + 1))
-            if echo "$CURL_BLOCK" | grep -q "HTTP_STATUS" 2>/dev/null; then
+            # 匹配 "HTTP_STATUS: 数字" 格式，避免匹配标题中的单词
+            if echo "$CURL_BLOCK" | grep -qE "HTTP_STATUS:\s*[0-9]+" 2>/dev/null; then
                 echo "✅" >&2
             else
-                echo "❌ (缺少 HTTP_STATUS)" >&2
-                echo "    → curl 输出必须包含 HTTP_STATUS: xxx" >&2
+                echo "❌ (缺少 HTTP_STATUS: xxx)" >&2
+                echo "    → curl 输出必须包含 HTTP_STATUS: 200 格式" >&2
                 FAILED=1
             fi
         done
@@ -312,8 +313,9 @@ fi
 # 如果 DoD 文件存在，检查内容
 if [[ -f "$DOD_FILE" ]]; then
     # 检查是否所有 checkbox 都打勾
-    UNCHECKED=$(grep -c '\- \[ \]' "$DOD_FILE" 2>/dev/null || echo "0")
-    CHECKED_BOXES=$(grep -c '\- \[x\]' "$DOD_FILE" 2>/dev/null || echo "0")
+    # 注意：grep -c 无匹配时输出 0 但退出码是 1，不能用 || echo "0"
+    UNCHECKED=$(grep -c '\- \[ \]' "$DOD_FILE" 2>/dev/null) || true
+    CHECKED_BOXES=$(grep -c '\- \[x\]' "$DOD_FILE" 2>/dev/null) || true
 
     echo -n "  验收项... " >&2
     CHECKED=$((CHECKED + 1))
