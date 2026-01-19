@@ -236,3 +236,9 @@ pr-gate.sh 只检查 `.quality-report.json` 的 `overall: "pass"` 字段，不�
   - 所有 11 个步骤都正常执行
   - 自动化工作流运行正常
 - **影响程度**: Medium（质检报告格式问题会阻塞 PR 创建）
+
+### [2026-01-19] Test V2 - Complete workflow validation
+
+- **Bug**: PR gate hook requires quality report with specific layer keys (`L1_automated`, `L2_verification`, `L3_acceptance`) instead of generic layer names
+- **优化点**: Quality report format should be documented in hook or step documentation for clarity
+- **影响程度**: Medium - Required manual correction during first test, but workflow validation successful
