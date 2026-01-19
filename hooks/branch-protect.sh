@@ -134,6 +134,7 @@ if [[ "$CURRENT_BRANCH" =~ ^cp-[a-zA-Z0-9] ]]; then
     fi
 
     # 步骤检查通过，放行
+    # 注：质检通过 pr-gate-v2.sh 在 PR 时强制验证证据链
     exit 0
 fi
 

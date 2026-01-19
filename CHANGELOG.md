@@ -7,6 +7,114 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [7.44.9] - 2026-01-19
+
+### Fixed
+- **pr-gate-v2**: 修复 HTTP_STATUS grep 匹配过宽问题
+  - 旧逻辑 `grep -q "HTTP_STATUS"` 会误匹配标题文字
+  - 新逻辑 `grep -qE "HTTP_STATUS:\s*[0-9]+"` 精确匹配值格式
+  - 更新错误提示为 `缺少 HTTP_STATUS: xxx`
+- **pr-gate-v2**: 修复 DoD checkbox 计数 bug
+  - `grep -c` 无匹配时输出 0 但退出码是 1
+  - 旧逻辑 `|| echo "0"` 导致输出 `0\n0`
+  - 新逻辑使用 `|| true` 避免重复输出
+
+## [7.44.8] - 2026-01-19
+
+### Added
+- **LEARNINGS**: 记录 T6 loop-count 伪造漏洞修复的经验教训
+
+## [7.44.7] - 2026-01-19
+
+### Security
+- **T6 修复**: 使用签名证明文件替代 git config loop-count，防止手动伪造
+  - `subagent-quality-gate.sh`: 生成 `.subagent-proof.json`，包含 SHA256 签名
+  - `pr-gate.sh`: 验证 proof 文件签名，签名无效则拒绝 PR
+  - 签名算法: `sha256(branch|timestamp|quality_hash|loop_count|secret)`
+
+## [7.44.6] - 2026-01-19
+
+### Fixed
+- **SubagentStop Hook**: 修复 T9 跨项目漏洞，优先使用 INPUT.cwd 定位项目
+  - 方案 1: 从 INPUT JSON 读取 cwd 字段（最可靠）
+  - 方案 2: git rev-parse --show-toplevel
+  - 方案 3: .subagent-lock 扫描（降级，会 warning）
+  - 方案 4: 无法定位则放行
+
+## [7.44.5] - 2026-01-19
+
+### Added
+- **LEARNINGS**: 记录扩展压力测试 T4-T9 结果，发现 T9 跨项目漏洞
+
+### Security
+- 发现 SubagentStop Hook 跨项目混乱问题 (T9)，多 .subagent-lock 时可能选错项目
+
+## [7.44.4] - 2026-01-19
+
+### Added
+- **LEARNINGS**: 记录 Step 5-7 压力测试完整验证结果 (T1/T2/T3 三场景)
+
+## [7.44.3] - 2026-01-19
+
+### Added
+- **LEARNINGS**: 记录未走 /dev 流程导致的问题和教训
+
+## [7.44.2] - 2026-01-19
+
+### Fixed
+- **Branch Protection**: 启用 GitHub develop 分支保护，禁止直接 push
+- **全局 Hooks**: 同步 branch-protect.sh 到全局，补全 .subagent-lock 强制机制
+
+### Security
+- 修复安全审计发现的 P0.1 问题（全局 Hook 缺失）
+- 启用 enforce_admins 防止管理员绕过保护
+
+## [7.44.1] - 2026-01-19
+
+### Fixed
+- **pr-gate.sh**: 增加 loop-count 检查，防止绕过 Subagent 强制机制
+  - 原来只检查 step>=7 和 .quality-report.json 存在
+  - 现在同时检查 loop-count 必须存在（只有 SubagentStop Hook 质检通过时才设置）
+
+## [7.44.0] - 2026-01-19
+
+### Added
+- **Step 5-7 Subagent Loop 强制机制**
+  - `branch-protect.sh`: step=4-6 期间必须有 .subagent-lock 才能写代码
+  - `subagent-quality-gate.sh`: SubagentStop hook，检查 .quality-report.json
+  - `settings.json`: 新增 SubagentStop hook 配置
+  - `SKILL.md`: 更新流程图和文档，说明 Subagent 执行机制
+  - 主 Agent 在 Step 4 后尝试写代码会被阻止，必须调用 Task tool 启动 Subagent
+
+## [7.43.1] - 2026-01-19
+
+### Fixed
+- **generate-report.sh**: 修复分支已删除或 PR 已合并时报告显示"未完成"的问题
+  - STEP 为空时默认设为 11（因为报告在 cleanup 阶段生成）
+  - git diff 为空时从 PR API 获取变更文件列表
+
+## [7.43.0] - 2026-01-19
+
+### Added
+- **任务质检报告输出**: /dev 完成后自动生成结构化报告
+  - `generate-report.sh`: 生成 txt 和 json 两种格式的报告
+  - 报告保存到 `.dev-runs/` 目录，供用户查看和 Cecilia 链式任务使用
+  - `cleanup.sh`: 在清理前自动调用报告生成
+  - `11-cleanup.md`: 文档更新，说明报告格式
+
+## [7.42.0] - 2026-01-19
+
+### Added
+- **测试任务模式**：PRD 标题含 `[TEST]` 前缀时自动启用
+  - Step 1: 检测 `[TEST]` 前缀，设置 `is-test=true` 标记
+  - Step 8: 跳过 CHANGELOG 和版本号更新，commit 用 `test:` 前缀
+  - Step 10: Learning 可选（只记录流程经验）
+  - Step 11: 额外检查残留（CHANGELOG、版本号、测试代码）
+  - SKILL.md: 新增"测试任务模式"文档
+
+### Fixed
+- 防止测试任务产生真实版本记录，避免"版本号增加但功能被删除"的矛盾
+
 ## [7.41.0] - 2026-01-18
 
 ### Fixed
