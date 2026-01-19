@@ -80,9 +80,9 @@ if [[ "$OVERALL" != "pass" ]]; then
     echo "" >&2
 
     # 增加 loop 计数
-    LOOP_COUNT=$(git config --get branch."$CURRENT_BRANCH".loop_count 2>/dev/null || echo "0")
+    LOOP_COUNT=$(git config --get branch."$CURRENT_BRANCH".loop-count 2>/dev/null || echo "0")
     LOOP_COUNT=$((LOOP_COUNT + 1))
-    git config branch."$CURRENT_BRANCH".loop_count "$LOOP_COUNT"
+    git config branch."$CURRENT_BRANCH".loop-count "$LOOP_COUNT"
     echo "  Loop 次数: $LOOP_COUNT" >&2
     echo "" >&2
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" >&2
@@ -104,11 +104,11 @@ echo "  质检通过" >&2
 echo "" >&2
 
 # 记录最终 loop 次数
-LOOP_COUNT=$(git config --get branch."$CURRENT_BRANCH".loop_count 2>/dev/null || echo "1")
+LOOP_COUNT=$(git config --get branch."$CURRENT_BRANCH".loop-count 2>/dev/null || echo "1")
 if [[ "$LOOP_COUNT" == "0" ]]; then
     LOOP_COUNT="1"
 fi
-git config branch."$CURRENT_BRANCH".loop_count "$LOOP_COUNT"
+git config branch."$CURRENT_BRANCH".loop-count "$LOOP_COUNT"
 echo "  最终 Loop 次数: $LOOP_COUNT" >&2
 
 # 删除 .subagent-lock 文件
