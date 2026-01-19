@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [7.44.9] - 2026-01-19
+
+### Fixed
+- **pr-gate-v2**: 修复 HTTP_STATUS grep 匹配过宽问题
+  - 旧逻辑 `grep -q "HTTP_STATUS"` 会误匹配标题文字
+  - 新逻辑 `grep -qE "HTTP_STATUS:\s*[0-9]+"` 精确匹配值格式
+  - 更新错误提示为 `缺少 HTTP_STATUS: xxx`
+- **pr-gate-v2**: 修复 DoD checkbox 计数 bug
+  - `grep -c` 无匹配时输出 0 但退出码是 1
+  - 旧逻辑 `|| echo "0"` 导致输出 `0\n0`
+  - 新逻辑使用 `|| true` 避免重复输出
+
 ## [7.44.8] - 2026-01-19
 
 ### Added
