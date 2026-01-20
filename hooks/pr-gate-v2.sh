@@ -223,7 +223,23 @@ if [[ "$MODE" == "pr" ]]; then
     echo -n "  DoD 文件... " >&2
     CHECKED=$((CHECKED + 1))
     if [[ -f "$DOD_FILE" ]]; then
-        echo "✅ (存在即可)" >&2
+        # 检查 .dod.md 是否在当前分支有修改（防止复用旧的 DoD）
+        DOD_MODIFIED=$(git diff develop --name-only 2>/dev/null | grep -c "^\.dod\.md$" || echo "0")
+        DOD_NEW=$(git status --porcelain 2>/dev/null | grep -c "\.dod\.md" || echo "0")
+
+        if [[ "$DOD_MODIFIED" -gt 0 || "$DOD_NEW" -gt 0 ]]; then
+            echo "✅" >&2
+        else
+            # 检查是否是新分支首次创建（.dod.md 已提交但未推送）
+            DOD_IN_BRANCH=$(git log develop..HEAD --name-only 2>/dev/null | grep -c "^\.dod\.md$" || echo "0")
+            if [[ "$DOD_IN_BRANCH" -gt 0 ]]; then
+                echo "✅ (本分支已提交)" >&2
+            else
+                echo "❌ (.dod.md 未更新)" >&2
+                echo "    → 当前 .dod.md 是旧任务的，请为本次任务更新 DoD" >&2
+                FAILED=1
+            fi
+        fi
     else
         echo "❌ (.dod.md 不存在)" >&2
         echo "    → 请创建 .dod.md 记录 DoD 清单" >&2
