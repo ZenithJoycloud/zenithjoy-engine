@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [8.0.1] - 2026-01-20
+
+### Removed
+- **hooks/session-init.sh**: 删除，只在会话开始显示一次，无实际用途
+- **hooks/stop-gate.sh**: 删除，功能已合并到 pr-gate-v2
+
+### Changed
+- **.claude/settings.json**: 移除 SessionStart 和 Stop 事件配置
+- **FEATURES.md**: 更新 Hook 列表，H4/H5 标记为 Deprecated
+
 ## [8.0.0] - 2026-01-20
 
 ### BREAKING CHANGES

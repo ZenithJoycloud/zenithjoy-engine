@@ -1,9 +1,10 @@
 ---
 id: features-registry
-version: 1.0.0
+version: 1.1.0
 created: 2026-01-20
 updated: 2026-01-20
 changelog:
+  - 1.1.0: 删除冗余 hooks (session-init, stop-gate)
   - 1.0.0: 初始版本 - v8.0 升级时创建
 ---
 
@@ -30,8 +31,8 @@ changelog:
 | H1 | branch-protect | **Committed** | `tests/hooks/branch-protect.test.ts` | 分支保护 + 步骤状态机 |
 | H2 | pr-gate-v2 | **Committed** | `tests/hooks/pr-gate.test.ts` | PR 前质检（L1 + 双模式） |
 | H3 | project-detect | **Committed** | `tests/hooks/project-detect.test.ts` | 项目类型检测 |
-| H4 | session-init | **Committed** | 手动验证 | 会话初始化通知 |
-| H5 | stop-gate | **Committed** | 手动验证 | 退出时进度提示 |
+| ~~H4~~ | ~~session-init~~ | **Deprecated** | - | v8.0.1 删除，只显示一次无实际用途 |
+| ~~H5~~ | ~~stop-gate~~ | **Deprecated** | - | v8.0.1 删除，功能已合并到 pr-gate-v2 |
 | ~~H6~~ | ~~pr-gate~~ | **Deprecated** | - | 被 pr-gate-v2 替代 |
 | ~~H7~~ | ~~subagent-quality-gate~~ | **Deprecated** | - | v8.0 删除 |
 
@@ -91,9 +92,9 @@ changelog:
 
 ## 统计
 
-- **Committed Features**: 12
-- **有自动化测试**: 5 (B1 + H1/H2/H3 待补)
-- **回归覆盖率**: 42%
+- **Committed Features**: 10
+- **有自动化测试**: 5 (B1 + H1/H2/H3)
+- **回归覆盖率**: 50%
 
 **v8.0 目标**: 回归覆盖率 > 60%
 
