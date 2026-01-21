@@ -346,8 +346,8 @@ EOF
     local end_time=$(date +%s)
     local duration=$((end_time - start_time))
 
-    # 提取测试数量
-    local test_count=$(echo "$output" | grep -oE "[0-9]+ passed" | head -1 | grep -oE "[0-9]+" || echo "0")
+    # 提取测试数量（匹配 "99 passed" 格式，取最大的数字）
+    local test_count=$(echo "$output" | grep -oE "Tests\s+[0-9]+ passed" | grep -oE "[0-9]+" || echo "$output" | grep -oE "[0-9]+ passed" | grep -oE "[0-9]+" | sort -rn | head -1 || echo "0")
 
     # 判断是否通过
     local passed="false"
