@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [8.0.21] - 2026-01-21
+
+### Removed
+- **B1 (calculator)**: 删除示例代码，业务代码不属于 Engine
+- **C4 (notify-failure)**: 删除 Notion 通知，改用 n8n/飞书
+- **W4 (测试任务模式)**: 删除此功能，不再需要
+
+### Changed
+- **regression-contract.yaml**: 升级到 v1.6.0，移除 B1/C4 相关 RCIs
+- **FEATURES.md**: 更新为 8 个 Committed Features
+- **scripts/qa-report.sh**: 移除已删除 Feature 的描述
+
 ## [8.0.20] - 2026-01-21
 
 ### Fixed

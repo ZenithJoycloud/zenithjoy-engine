@@ -15,7 +15,7 @@
 #
 # ============================================================================
 
-version: "1.5.0"
+version: "1.6.0"
 updated: "2026-01-21"
 
 # ============================================================================
@@ -321,45 +321,6 @@ workflow:
       type: log
       contains: "CI 失败"
 
-  # --------------------------------------------------------------------------
-  # W4: 测试任务模式
-  # --------------------------------------------------------------------------
-  - id: W4-001
-    feature: W4
-    name: "[TEST] 前缀检测"
-    scope: workflow
-    priority: P2
-    trigger: [Release]
-    method: manual
-    tags: [dev, test-mode]
-    owner: workflow
-    steps:
-      given: "PRD 标题包含 [TEST]"
-      when: "进入 Step 3"
-      then: "设置 git config branch.*.is-test true"
-    evidence:
-      type: command
-      run: "git config branch.*.is-test"
-      contains: "true"
-
-  - id: W4-002
-    feature: W4
-    name: "测试任务跳过版本更新"
-    scope: workflow
-    priority: P2
-    trigger: [Release]
-    method: manual
-    tags: [dev, test-mode, version]
-    owner: workflow
-    steps:
-      given: "is-test = true"
-      when: "进入 Step 8 PR"
-      then: "跳过 CHANGELOG 和版本号更新"
-    evidence:
-      type: file
-      path: "CHANGELOG.md"
-      description: "PR 内容不含版本变更"
-
 # ============================================================================
 # CI/Release 回归契约
 # ============================================================================
@@ -429,52 +390,6 @@ ci:
       name: "shell-check"
       status: success
     test: ".github/workflows/ci.yml"
-
-  # --------------------------------------------------------------------------
-  # C4: notify-failure
-  # --------------------------------------------------------------------------
-  - id: C4-001
-    feature: C4
-    name: "CI 失败发送 Notion 通知"
-    scope: ci
-    priority: P2
-    trigger: [Release]
-    method: manual
-    tags: [ci, notify]
-    owner: infra
-    steps:
-      given: "CI 任何 job 失败"
-      when: "CI workflow 完成"
-      then: "发送 Notion 通知，包含失败链接"
-    evidence:
-      type: external
-      platform: notion
-      description: "Notion 页面收到通知"
-
-# ============================================================================
-# 业务代码回归契约
-# ============================================================================
-business:
-  # --------------------------------------------------------------------------
-  # B1: calculator
-  # --------------------------------------------------------------------------
-  - id: B1-001
-    feature: B1
-    name: "Calculator 单元测试"
-    scope: business
-    priority: P0
-    trigger: [PR, Release]
-    method: auto
-    tags: [business, calculator, unit-test]
-    owner: business
-    steps:
-      given: "calculator 模块存在"
-      when: "运行 npm test"
-      then: "80 个测试用例全绿"
-    evidence:
-      type: test_output
-      contains: "80 passed"
-    test: "tests/calculator.test.ts"
 
 # ============================================================================
 # Export 回归契约

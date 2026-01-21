@@ -68,7 +68,7 @@ Full Regression（全量测试）
 | W1 | /dev 11 步流程 | **Committed** | 手动验证 | 统一开发入口 |
 | ~~W2~~ | ~~步骤状态机~~ | **Deprecated** | - | v8.0.11 简化，不再强制追踪 step |
 | W3 | 循环回退 | **Committed** | 手动验证 | 质检/CI 失败 → 继续修复 |
-| W4 | 测试任务模式 | **Committed** | 手动验证 | [TEST] 前缀检测 |
+| ~~W4~~ | ~~测试任务模式~~ | **Deprecated** | - | v8.0.21 删除，功能不需要 |
 
 ---
 
@@ -76,7 +76,7 @@ Full Regression（全量测试）
 
 | ID | Feature | 状态 | 最小验收 | 说明 |
 |----|---------|------|----------|------|
-| B1 | calculator | **Committed** | `npm test` (80 用例) | 计算器模块示例 |
+| ~~B1~~ | ~~calculator~~ | **Deprecated** | - | v8.0.21 删除，示例代码不需要 |
 
 ---
 
@@ -87,7 +87,7 @@ Full Regression（全量测试）
 | C1 | version-check | **Committed** | CI 运行 | PR 版本号检查 |
 | C2 | test job | **Committed** | CI 运行 | L1 全量测试 |
 | C3 | shell syntax check | **Committed** | CI 运行 | Shell 脚本语法 |
-| C4 | notify-failure | **Committed** | CI 运行 | Notion 失败通知 |
+| ~~C4~~ | ~~notify-failure~~ | **Deprecated** | - | v8.0.21 删除，改用 n8n/飞书通知 |
 
 ---
 
@@ -127,7 +127,7 @@ Trigger 规则:
 
 > 使用 `bash scripts/rc-filter.sh stats` 获取实时统计
 
-- **Committed Features**: 11（H1-H2, W1/W3/W4, C1-C4, B1, E1）
+- **Committed Features**: 8（H1-H2, W1/W3, C1-C3, E1）
 
 ---
 
