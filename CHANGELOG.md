@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [8.5.0] - 2026-01-22
+
+### Added
+- **scripts/setup-branch-protection.sh**: GitHub 分支保护自动化脚本
+  - `--check` 模式检查所有仓库保护状态
+  - `--fix` 模式修复保护配置
+  - 支持指定单个仓库或批量处理
+- **CLAUDE.md**: 新增 GitHub 分支保护配置文档
+
+### Security
+- **zenithjoy-autopilot**: 修复 main/develop 分支 `enforce_admins: false` 漏洞
+  - Admin 不再能绕过 CI 强行合并 PR
+- **zenithjoy-engine**: 启用 `enforce_admins: true`
+
 ## [8.4.0] - 2026-01-22
 
 ### Security
