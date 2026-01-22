@@ -10,6 +10,8 @@ AI 开发工作流引擎。
 |------|------|
 | 版本号 | `package.json` |
 | 变更历史 | `CHANGELOG.md` |
+| 功能清单 | `FEATURES.md` |
+| 回归契约 | `regression-contract.yaml` |
 | 工作流定义 | `skills/dev/SKILL.md` |
 | 知识架构 | `docs/ARCHITECTURE.md` |
 | 开发经验 | `docs/LEARNINGS.md` |
@@ -43,7 +45,8 @@ zenithjoy-engine/
 │   └── pr-gate-v2.sh      # PR 前质检（双模式：pr/release）
 ├── skills/
 │   ├── dev/         # /dev 开发工作流
-│   └── audit/       # /audit 代码审计
+│   ├── audit/       # /audit 代码审计
+│   └── qa/          # /qa QA 总控
 ├── docs/            # 详细文档
 │   ├── ARCHITECTURE.md    # 知识分层架构
 │   ├── LEARNINGS.md       # 开发经验

@@ -70,6 +70,14 @@ if [[ -f "$L2_EVIDENCE_FILE" ]]; then
                     FULL_PATH="$PROJECT_ROOT/$FILE_PATH"
                 fi
 
+                # 安全检查：防止路径遍历
+                REAL_PATH=$(realpath -m "$FULL_PATH" 2>/dev/null || echo "")
+                if [[ -z "$REAL_PATH" || ! "$REAL_PATH" =~ ^"$PROJECT_ROOT" ]]; then
+                    echo "  截图 $SID... ❌ (路径超出项目范围: $FILE_PATH)" >&2
+                    FAILED=1
+                    continue
+                fi
+
                 echo -n "  截图 $SID... "
                 CHECKED=$((CHECKED + 1))
                 if [[ -f "$FULL_PATH" ]]; then
@@ -187,7 +195,7 @@ echo ""
 
 if [[ $FAILED -eq 1 ]]; then
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-    echo "  ❌ Release Check 失败"
+    echo "  ❌ Release 检查失败"
     echo ""
     echo "  请补充证据："
     echo "    1. 创建/更新 .layer2-evidence.md（截图/curl 证据）"
@@ -198,7 +206,7 @@ if [[ $FAILED -eq 1 ]]; then
 fi
 
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "  ✅ Release Check 通过 ($CHECKED 项)"
+echo "  ✅ Release 检查通过 ($CHECKED 项)"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
 exit 0

@@ -48,18 +48,30 @@ show_stats() {
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo ""
 
-    TOTAL=$(grep -c "^\s*- id:" "$RC_FILE" || echo 0)
+    # 排除 GP-* 条目（Golden Paths 不是 RCI）
+    TOTAL=$(grep "^\s*- id:" "$RC_FILE" | grep -cv "GP-" || echo 0)
+    GP_COUNT=$(grep -c "id: GP-" "$RC_FILE" || echo 0)
     P0=$(grep -c "priority: P0" "$RC_FILE" || echo 0)
     P1=$(grep -c "priority: P1" "$RC_FILE" || echo 0)
     P2=$(grep -c "priority: P2" "$RC_FILE" || echo 0)
     AUTO=$(grep -c "method: auto" "$RC_FILE" || echo 0)
     MANUAL=$(grep -c "method: manual" "$RC_FILE" || echo 0)
 
-    # 统计 trigger（简化版）
-    PR_COUNT=$(grep -E "trigger:.*PR" "$RC_FILE" | wc -l || echo 0)
-    RELEASE_COUNT=$(grep -E "trigger:.*Release" "$RC_FILE" | wc -l || echo 0)
+    # 统计 trigger（排除 Golden Paths）
+    # 使用 awk 精确统计：只统计非 GP 条目的 trigger
+    PR_COUNT=$(awk '
+        /- id:/ { id = $3; is_gp = (id ~ /^GP-/) }
+        /trigger:/ && !is_gp && /PR/ { count++ }
+        END { print count+0 }
+    ' "$RC_FILE")
+    RELEASE_COUNT=$(awk '
+        /- id:/ { id = $3; is_gp = (id ~ /^GP-/) }
+        /trigger:/ && !is_gp && /Release/ { count++ }
+        END { print count+0 }
+    ' "$RC_FILE")
 
     echo "  总 RCI 数量:    $TOTAL"
+    echo "  Golden Paths:   $GP_COUNT"
     echo ""
     echo "  Priority 分布:"
     echo "    P0 (核心):    $P0"
@@ -73,7 +85,7 @@ show_stats() {
     echo "  Trigger 覆盖:"
     echo "    PR Gate:      $PR_COUNT 条"
     echo "    Release Gate: $RELEASE_COUNT 条"
-    echo "    Nightly:      $TOTAL 条 (全部)"
+    echo "    Nightly:      $TOTAL 条 (全部 RCI)"
     echo ""
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 }
@@ -89,15 +101,15 @@ filter_by_trigger() {
     echo ""
 
     if [[ "$trigger" == "Nightly" ]]; then
-        # Nightly 跑全部
-        grep -B1 "^\s*- id:" "$RC_FILE" | grep "id:" | sed 's/.*id: /  /'
+        # Nightly 跑全部（排除 GP-*）
+        grep -B1 "^\s*- id:" "$RC_FILE" | grep "id:" | grep -v "GP-" | sed 's/.*id: /  /'
     else
         # PR/Release 按 trigger 过滤
         # 简化实现：找包含该 trigger 的条目
         awk -v trigger="$trigger" '
-            /- id:/ { id = $3 }
+            /\- id:/ { id = $3 }
             /trigger:/ && $0 ~ trigger { print "  " id }
-        ' "$RC_FILE"
+        ' "$RC_FILE" | grep -v "^  GP-"  # 排除 Golden Paths
     fi
 
     echo ""

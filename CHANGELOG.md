@@ -7,6 +7,168 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [8.0.31] - 2026-01-22
+
+### Changed
+- **scripts/run-regression.sh**: 重写 L3 回归测试逻辑
+  - 新增 `parse_rcis()` 函数：使用 yq 解析 regression-contract.yaml 中所有 RCI
+  - 新增 `filter_by_trigger()` 函数：根据 pr/release/nightly 模式过滤 RCI
+  - 新增 `run_evidence()` 函数：执行 evidence.type=command 的自动化测试
+  - 支持 `--dry-run` 参数：只显示要执行的 RCI 列表，不实际执行
+  - 智能跳过：命令不存在时标记为 skipped 而非 failed
+  - 使用 ASCII Unit Separator 作为字段分隔符，避免与命令中的 `|` 冲突
+
+### Fixed
+- L3 测试现在能正确解析和执行 regression-contract.yaml 中定义的所有自动化测试
+- 修复 `set -e` 与算术表达式 `((i++))` 的兼容性问题
+
+## [8.0.30] - 2026-01-22
+
+### Added
+- **scripts/run-regression.sh**: 回归测试运行器，支持 pr/release/nightly 三种模式
+- **.github/workflows/nightly.yml**: Nightly 全量回归工作流（每天 02:00 自动运行）
+
+### Fixed
+- **ci.yml release-check**: 真正运行 L3 回归测试，而不只是检查文件存在
+
+### Changed
+- L3 测试现在会真正执行 RCI 中定义的自动化测试
+
+## [8.0.29] - 2026-01-22
+
+### Changed
+- 清理 `.test-level.json` 移除未使用的 L3-L6 条目
+
+## [8.0.28] - 2026-01-21
+
+### Security
+- **n8n/prd-executor.json**: 删除存在命令注入漏洞的工作流文件
+  - 漏洞: prd_path/work_dir 用户输入直接拼接到 SSH 命令
+  - 保留安全的 prd-executor-simple.json (HTTP 调用，无 shell 拼接)
+
+### Changed
+- **n8n/README.md**: 更新文档，只保留 simple 版本说明
+
+## [8.0.27] - 2026-01-21
+
+### Added
+- **N1 (Cecilia)**: 注册为 Committed Feature
+  - 无头 Claude Code，供 N8N 调度执行开发任务
+  - 新增 3 个 RCI (N1-001, N1-002, N1-003)
+- **GP-006 (N8N/Cecilia 无头链路)**: 端到端验证无头模式执行流程
+
+### Changed
+- **FEATURES.md**: 升级到 v1.11.0，新增 N8N Integration 分类
+- **regression-contract.yaml**: 升级到 v1.11.0，新增 n8n 分类
+
+## [8.0.26] - 2026-01-21
+
+### Fixed
+- **pr-gate-v2.sh**: 修复带引号的 `--base 'main'` 参数解析
+- **release-check.sh**: 添加路径遍历防护（安全修复）
+- **RCI Evidence**: 为 E1-003, E2-002, E2-003 添加 `contains` 字段
+- **GP-005**: 补充缺失的 E2-003 RCI 引用
+
+### Changed
+- **QA Skill**: 添加缺失的 frontmatter 元数据
+- **criteria.md**: 更新示例，移除已废弃的 B1, C4, W4 引用
+- **regression-contract.yaml**: 升级到 v1.10.0
+- **FEATURES.md**: 同步版本到 v1.10.0
+- **docs/**: 为 4 个文档添加 frontmatter（ARCHITECTURE, LEARNINGS, QUALITY-STRATEGY, INTERFACE-SPEC）
+- **CLAUDE.md**: 目录结构新增 qa/ skill 记录
+
+### Removed
+- **dist/**: 清理 8 个孤立构建文件（t5-test, t8-test, test-v2, utils/）
+
+## [8.0.25] - 2026-01-21
+
+### Fixed
+- **pr-gate-v2.sh**: 修复 `--base=value` 格式解析 bug（之前只支持 `--base value`）
+- **rc-filter.sh**: 修复 stats 计算时错误包含 Golden Paths 的问题
+
+### Removed
+- **W4 [TEST] 模式残留**: 从 skills/dev/steps/01-prd.md 移除已废弃的测试任务检测代码
+- **孤儿测试文件**: 删除 test-automation.txt 和 test-automation.test.ts
+
+### Changed
+- **FEATURES.md**: 升级到 v1.9.0
+
+## [8.0.24] - 2026-01-21
+
+### Added
+- **C5 (release-check)**: 注册为 Committed Feature
+  - Release 前 DoD 完成度检查
+  - 新增 1 个 RCI (C5-001)
+- **GP-005 (Export 链路)**: 覆盖 E1 + E2 的端到端验证
+
+### Changed
+- **GP-001**: 新增 W5-001, W5-002（模式检测）
+- **regression-contract.yaml**: 升级到 v1.9.0
+- **FEATURES.md**: 更新为 11 个 Committed Features
+
+## [8.0.23] - 2026-01-21
+
+### Added
+- **E2 (Dev Session Reporting)**: 注册为 Committed Feature
+  - 开发任务报告输出（JSON+TXT）
+  - 新增 mode 字段区分有头(interactive)/无头(headless)模式
+  - 新增 3 个 RCIs (E2-001 ~ E2-003)
+
+### Changed
+- **regression-contract.yaml**: 升级到 v1.8.0
+- **FEATURES.md**: 更新为 10 个 Committed Features
+
+## [8.0.22] - 2026-01-21
+
+### Added
+- **W5 (模式自动检测)**: 注册为 Committed Feature
+  - /dev 入口自动识别四种模式：new/continue/fix/merge
+  - 新增 4 个 RCIs (W5-001 ~ W5-004)
+
+### Changed
+- **regression-contract.yaml**: 升级到 v1.7.0
+- **FEATURES.md**: 更新为 9 个 Committed Features
+
+## [8.0.21] - 2026-01-21
+
+### Removed
+- **B1 (calculator)**: 删除示例代码，业务代码不属于 Engine
+- **C4 (notify-failure)**: 删除 Notion 通知，改用 n8n/飞书
+- **W4 (测试任务模式)**: 删除此功能，不再需要
+
+### Changed
+- **regression-contract.yaml**: 升级到 v1.6.0，移除 B1/C4 相关 RCIs
+- **FEATURES.md**: 更新为 8 个 Committed Features
+- **scripts/qa-report.sh**: 移除已删除 Feature 的描述
+
+## [8.0.20] - 2026-01-21
+
+### Fixed
+- **scripts/rc-filter.sh**: 修复 awk 正则表达式 bug（`/- id:/` → `/\- id:/`）
+  - Release 模式之前不输出任何 RCI
+  - 同时排除 GP-* 条目
+
+## [8.0.19] - 2026-01-21
+
+### Fixed
+- **scripts/rc-filter.sh**: 修复统计 bug，排除 GP-* 条目（显示 26 RCI + 4 GP）
+- **FEATURES.md**: 更新统计为 11 个 Committed Features
+- **testing-matrix.md**: 移除不存在的 ecc-test.sh 引用，改为业务 repo 自行实现
+
+### Changed
+- **regression-contract.yaml**: 升级到 v1.5.0
+  - GP-001 合并 W3 (循环回退) 的 RCIs
+  - GP-001 覆盖 Feature 从 4 个增加到 5 个
+
+## [8.0.18] - 2026-01-21
+
+### Changed
+- **scripts/qa-report.sh**: 升级到 v3，增强 Dashboard 数据输出
+  - Features: 新增 description（人话描述）、rci_count、rcis 列表、in_golden_paths
+  - RCIs: 新增 details 完整列表（id, feature, name, priority, trigger, method, scope）
+  - Golden Paths: 新增 rcis 列表、covers_features
+  - Gates: 新增每个 gate 的 rcis 列表
+
 ## [8.0.17] - 2026-01-21
 
 ### Changed
