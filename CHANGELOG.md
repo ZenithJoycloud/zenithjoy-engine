@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [9.3.6] - 2026-01-23
+
+### Fixed
+
+- **测试目录污染**: 修复 pr-gate-phase2.test.ts 污染 PROJECT_ROOT
+  - 所有测试改用独立临时目录（带时间戳避免冲突）
+  - 添加 beforeEach 清理，防止测试之间污染
+  - 添加 afterAll 全局清理，防止残留文件
+  - 修复 Hook 环境测试不稳定问题（186/186 稳定通过）
+
 ## [9.3.5] - 2026-01-23
 
 ### Fixed
