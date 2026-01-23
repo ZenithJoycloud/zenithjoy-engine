@@ -31,16 +31,25 @@ const options = {
   force: false,
 };
 
+// P1 修复: 参数解析添加越界检查
+function requireArg(args, i, flag) {
+  if (i + 1 >= args.length) {
+    console.error(`错误: ${flag} 需要一个参数值`);
+    process.exit(1);
+  }
+  return args[++i];
+}
+
 for (let i = 0; i < args.length; i++) {
   switch (args[i]) {
     case '--metrics':
-      options.metrics = args[++i];
+      options.metrics = requireArg(args, i++, '--metrics');
       break;
     case '--learnings':
-      options.learnings = args[++i];
+      options.learnings = requireArg(args, i++, '--learnings');
       break;
     case '--contract':
-      options.contract = args[++i];
+      options.contract = requireArg(args, i++, '--contract');
       break;
     case '--dry-run':
       options.dryRun = true;

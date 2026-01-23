@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [8.20.0] - 2026-01-23
+
+### Fixed (MEDIUM P1 级问题修复)
+- **hooks/branch-protect.sh**: cd 失败时 exit 2（非 exit 0）
+  - 防止绕过分支保护
+- **hooks/session-start.sh**: 输出到 stderr
+  - 防止 Hook 框架误解析 stdout
+- **scripts/deploy.sh**: glob 无匹配时安全跳过
+  - 添加 `[[ -e "$f" ]] || continue` 检查
+- **scripts/run-regression.sh**: trap 覆盖 INT TERM 信号
+  - 确保 Ctrl+C 时临时文件被清理
+- **scripts/devgate/metrics.cjs**: 参数解析越界检查
+  - 添加 `requireArg()` 函数，参数缺失时给出清晰错误
+- **scripts/devgate/append-learnings.cjs**: 参数解析越界检查
+  - 同上
+
 ## [8.19.0] - 2026-01-23
 
 ### Fixed (深度审计 HIGH 级问题修复)
