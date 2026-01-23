@@ -38,25 +38,34 @@ const options = {
   base: 'develop',
 };
 
+// P1 修复: 参数解析添加越界检查
+function requireArg(args, i, flag) {
+  if (i + 1 >= args.length) {
+    console.error(`错误: ${flag} 需要一个参数值`);
+    process.exit(1);
+  }
+  return args[++i];
+}
+
 for (let i = 0; i < args.length; i++) {
   switch (args[i]) {
     case '--since':
-      options.since = args[++i];
+      options.since = requireArg(args, i++, '--since');
       break;
     case '--until':
-      options.until = args[++i];
+      options.until = requireArg(args, i++, '--until');
       break;
     case '--month':
-      options.month = args[++i];
+      options.month = requireArg(args, i++, '--month');
       break;
     case '--format':
-      options.format = args[++i];
+      options.format = requireArg(args, i++, '--format');
       break;
     case '--verbose':
       options.verbose = true;
       break;
     case '--base':
-      options.base = args[++i];
+      options.base = requireArg(args, i++, '--base');
       break;
     case '--help':
       console.log(`

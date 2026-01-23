@@ -103,8 +103,10 @@ if [[ ! -d "$FILE_DIR" ]]; then
 fi
 
 # 切换到文件所在目录，获取该仓库的信息
+# P1 修复: cd 失败时 exit 2（非 exit 0），防止绕过保护
 if ! cd "$FILE_DIR" 2>/dev/null; then
-    exit 0
+    echo "❌ 无法进入目录: $FILE_DIR" >&2
+    exit 2
 fi
 
 PROJECT_ROOT=$(git rev-parse --show-toplevel 2>/dev/null || echo "")

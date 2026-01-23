@@ -85,7 +85,9 @@ echo -e "${BLUE}1️⃣  同步 hooks/${NC}"
 if [[ -d "$ENGINE_ROOT/hooks" ]]; then
     mkdir -p "$TARGET_DIR/hooks"
 
+    # P1 修复: glob 无匹配时跳过循环
     for f in "$ENGINE_ROOT/hooks/"*.sh; do
+        [[ -e "$f" ]] || continue
         if [[ -f "$f" ]]; then
             filename=$(basename "$f")
 
@@ -118,7 +120,9 @@ echo -e "${BLUE}2️⃣  同步 skills/${NC}"
 if [[ -d "$ENGINE_ROOT/skills" ]]; then
     mkdir -p "$TARGET_DIR/skills"
 
+    # P1 修复: glob 无匹配时跳过循环
     for skill_dir in "$ENGINE_ROOT/skills/"*/; do
+        [[ -e "$skill_dir" ]] || continue
         if [[ -d "$skill_dir" ]]; then
             skill_name=$(basename "$skill_dir")
             target_skill="$TARGET_DIR/skills/$skill_name"

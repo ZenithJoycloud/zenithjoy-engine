@@ -365,7 +365,8 @@ else
     # 使用临时文件存储 RCI 列表（避免子 shell 问题）
     RCI_RAW_FILE=$(mktemp)
     RCI_LIST_FILE=$(mktemp)
-    trap "rm -f \"$RCI_RAW_FILE\" \"$RCI_LIST_FILE\"" EXIT
+    # P1 修复: trap 覆盖 INT TERM 信号，确保 Ctrl+C 时临时文件被清理
+    trap "rm -f \"$RCI_RAW_FILE\" \"$RCI_LIST_FILE\"" EXIT INT TERM
 
     # 分两步写入：先解析，再过滤
     parse_rcis > "$RCI_RAW_FILE"
