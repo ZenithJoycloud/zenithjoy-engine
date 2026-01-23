@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [9.3.3] - 2026-01-23
+
+### Fixed
+
+- **release-check.sh awk 模式 bug**: 使用 sed 替代 awk 提取证据块
+  - 修复范围模式在同一行匹配开始和结束的问题
+
 ## [9.3.2] - 2026-01-23
 
 ### Changed
