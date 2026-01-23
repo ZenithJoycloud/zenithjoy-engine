@@ -453,12 +453,25 @@ if [[ "$MODE" == "pr" ]]; then
         echo "[SKIP] (DoD 不存在)" >&2
     fi
 
-    # 检查 QA-DECISION.md 存在
+    # 检查 QA-DECISION.md 存在且内容有效
     QA_DECISION_FILE="$PROJECT_ROOT/docs/QA-DECISION.md"
     echo -n "  QA 决策文件... " >&2
     CHECK_COUNT=$((CHECK_COUNT + 1))
     if [[ -f "$QA_DECISION_FILE" ]]; then
-        echo "[OK]" >&2
+        # A2 fix: 不仅检查存在，还要验证内容有效
+        QA_HAS_DECISION=$(clean_number "$(grep -cE '^Decision:' "$QA_DECISION_FILE" 2>/dev/null || echo 0)")
+        QA_FILE_SIZE=$(wc -c < "$QA_DECISION_FILE" 2>/dev/null || echo 0)
+        if [[ "$QA_FILE_SIZE" -lt 10 ]]; then
+            echo "[FAIL] (QA-DECISION.md 为空或内容过少)" >&2
+            echo "    -> 请调用 /qa skill 生成有效的 QA 决策" >&2
+            FAILED=1
+        elif [[ "$QA_HAS_DECISION" -eq 0 ]]; then
+            echo "[FAIL] (缺少 Decision 字段)" >&2
+            echo "    -> QA-DECISION.md 必须包含 'Decision: ...' 字段" >&2
+            FAILED=1
+        else
+            echo "[OK]" >&2
+        fi
     else
         echo "[FAIL] (docs/QA-DECISION.md 不存在)" >&2
         echo "    -> 请调用 /qa skill 生成 QA 决策" >&2
@@ -538,10 +551,15 @@ if [[ "$MODE" == "release" ]]; then
             # L2 修复: 支持大小写 [x] 和 [X]
             UNCHECKED_COUNT=$(clean_number "$(grep -c '\- \[ \]' "$RELEASE_DOD_FILE" 2>/dev/null || echo 0)")
             CHECKED_COUNT=$(clean_number "$(grep -cE '\- \[[xX]\]' "$RELEASE_DOD_FILE" 2>/dev/null || echo 0)")
+            TOTAL_COUNT=$((UNCHECKED_COUNT + CHECKED_COUNT))
 
             echo -n "  验收项... " >&2
             CHECK_COUNT=$((CHECK_COUNT + 1))
-            if [[ "$UNCHECKED_COUNT" -eq 0 && "$CHECKED_COUNT" -gt 0 ]]; then
+            # A1 fix: 空 DoD（无验收项）必须 fail
+            if [[ "$TOTAL_COUNT" -eq 0 ]]; then
+                echo "[FAIL] (DoD 无验收项，至少需要 1 个 checkbox)" >&2
+                FAILED=1
+            elif [[ "$UNCHECKED_COUNT" -eq 0 && "$CHECKED_COUNT" -gt 0 ]]; then
                 echo "[OK] ($CHECKED_COUNT 项全部完成)" >&2
             else
                 echo "[FAIL] ($UNCHECKED_COUNT 项未完成)" >&2

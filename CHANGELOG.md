@@ -7,6 +7,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [9.1.0] - 2026-01-23
+
+### Added (Gate Test Suite - 检查系统 v1 完成)
+
+**里程碑版本**：建立"可封顶、可收口"的审计体系。
+
+#### Gate Test Suite (16 个测试)
+- **tests/gate/gate.test.ts**: 检查系统的自测
+  - A1: 空 DoD 必须 fail
+  - A2: QA 决策空内容必须 fail
+  - A3: P0wer 不应触发 P0 流程
+  - A5: release 模式不跳过 L1 RCI
+  - A6: 非白名单命令必须 fail
+  - A7: checkout 失败后不删除分支
+
+#### A 层问题修复（灾难级误放行防护）
+- **pr-gate-v2.sh**: 空 DoD 检查（TOTAL_COUNT=0 时 fail）
+- **pr-gate-v2.sh**: QA 决策内容校验（检查 Decision 字段和文件大小）
+- **detect-priority.cjs**: 词边界修复（防止 P0wer 误匹配）
+- **ci.yml**: ci-passed 依赖 release-check（PR to main 时）
+- **run-regression.sh**: npm 命令限制（只允许 test/qa/build/ci/install）
+- **cleanup.sh**: checkout 失败时跳过远程分支删除
+
+#### B 层 Known Issues 文档
+- **docs/KNOWN-ISSUES.md**: 6 个已知问题的触发条件和临时解决方案
+
+### Changed
+- 测试数量从 134 增加到 150
+
 ## [9.0.1] - 2026-01-23
 
 ### Fixed (深度扫描遗漏修复)

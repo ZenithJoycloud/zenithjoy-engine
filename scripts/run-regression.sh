@@ -185,7 +185,15 @@ run_evidence() {
             # 只允许执行白名单中的命令前缀
             # P3 修复: 删除重复的 first_cmd 定义（已在上面定义）
             case "$first_cmd" in
-                npm|node|bash|sh|cat|grep|ls|curl|gh|git|jq|yq)
+                npm)
+                    # A6 fix: npm 命令只允许特定脚本（防止 npm run evil-script）
+                    if [[ ! "$evidence_run" =~ ^npm\ (run\ )?(test|qa|build|ci|install)(\s|$) ]]; then
+                        echo -e "${YELLOW}⏭️ (npm only allows: test, qa, build, ci, install)${NC}"
+                        L3_SKIPPED=$((L3_SKIPPED + 1))
+                        return
+                    fi
+                    ;;
+                node|bash|sh|cat|grep|ls|curl|gh|git|jq|yq)
                     # 允许的命令
                     ;;
                 *)
