@@ -114,7 +114,7 @@ jobs:
           npm ci
           # DoD 检查项（按顺序）
           npm run typecheck --if-present   # 类型检查
-          npm run test --if-present        # 单元测试
+          npm run gate:test --if-present   # 单元测试 (gate)
           npm run build --if-present       # 构建验证
 
       # Python
