@@ -77,8 +77,11 @@ beforeEach(() => {
 
 ### metrics.test.ts
 
-移除了未使用的 `TEST_HISTORY_DIR`（已污染项目目录的常量定义）。
-所有测试早已使用 tmpdir()，此常量从未被实际使用。
+- 移除了未使用的 `TEST_HISTORY_DIR`（已污染项目目录的常量定义）
+- 所有测试目录添加时间戳隔离（防止并发冲突）：
+  - `test-snapshot-meta` → `test-snapshot-meta-${Date.now()}`
+  - `test-metrics-calc` → `test-metrics-calc-${Date.now()}`
+  - `test-metrics-window` → `test-metrics-window-${Date.now()}`
 
 ## 验收
 

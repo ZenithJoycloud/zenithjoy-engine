@@ -37,7 +37,7 @@ function runMetrics(args: string, cwd: string): string {
 }
 
 describe('snapshot-prd-dod.sh meta 增强', () => {
-  const testDir = path.join(tmpdir(), 'test-snapshot-meta')
+  const testDir = path.join(tmpdir(), `test-snapshot-meta-${Date.now()}`)
 
   beforeAll(() => {
     execSync(`rm -rf ${testDir} && mkdir -p ${testDir}`)
@@ -273,7 +273,7 @@ describe('metrics.sh 基础功能', () => {
 })
 
 describe('metrics.sh 指标计算', () => {
-  const testDir = path.join(tmpdir(), 'test-metrics-calc')
+  const testDir = path.join(tmpdir(), `test-metrics-calc-${Date.now()}`)
 
   beforeAll(() => {
     // 创建测试目录和 git repo
@@ -397,7 +397,7 @@ describe('metrics.sh 指标计算', () => {
 })
 
 describe('metrics.sh 时间窗口', () => {
-  const testDir = path.join(tmpdir(), 'test-metrics-window')
+  const testDir = path.join(tmpdir(), `test-metrics-window-${Date.now()}`)
 
   beforeAll(() => {
     execSync(`rm -rf ${testDir} && mkdir -p ${testDir}/.history`)
