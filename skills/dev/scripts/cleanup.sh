@@ -136,7 +136,10 @@ fi
 # ========================================
 echo ""
 echo "[4]  检查远程 cp-* 分支..."
-if git ls-remote --heads origin "$CP_BRANCH" 2>/dev/null | grep -q "$CP_BRANCH"; then
+# A7 fix: checkout 失败时跳过远程分支删除（防止误删）
+if [[ $CHECKOUT_FAILED -eq 1 ]]; then
+    echo -e "   ${YELLOW}[WARN]  跳过（checkout 失败，为安全起见不删除远程分支）${NC}"
+elif git ls-remote --heads origin "$CP_BRANCH" 2>/dev/null | grep -q "$CP_BRANCH"; then
     echo "   → 删除远程分支 $CP_BRANCH..."
     if git push origin --delete "$CP_BRANCH" 2>/dev/null; then
         echo -e "   ${GREEN}[OK] 已删除远程分支${NC}"

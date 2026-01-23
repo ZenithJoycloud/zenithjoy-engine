@@ -297,12 +297,14 @@ jobs:
 
   # CI 通过后通知（不自动合并，需要手动确认）
   # 注意：此 job 只在 pull_request 事件时运行，push 事件时跳过
+  # A4 fix: PR to main 时必须等 release-check 完成
   ci-passed:
-    needs: [version-check, test]
+    needs: [version-check, test, release-check]
     if: |
       github.event_name == 'pull_request' &&
       needs.test.result == 'success' &&
-      (needs.version-check.result == 'success' || needs.version-check.result == 'skipped')
+      (needs.version-check.result == 'success' || needs.version-check.result == 'skipped') &&
+      (needs.release-check.result == 'success' || needs.release-check.result == 'skipped')
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:

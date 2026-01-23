@@ -63,8 +63,9 @@ function extractPriority(text) {
     return "P0";
   }
 
-  // 匹配 P0, P1, P2, P3（不区分大小写，词边界）
-  const match = text.match(/\b[Pp]([0-3])\b/);
+  // 匹配 P0, P1, P2, P3（不区分大小写）
+  // A3 fix: 使用负向前向查找，确保 P0 后面不是字母数字（防止 P0wer 误匹配）
+  const match = text.match(/(?<![a-zA-Z0-9])[Pp]([0-3])(?![a-zA-Z0-9])/);
   if (match) {
     return `P${match[1]}`;
   }
@@ -124,12 +125,23 @@ function detectFromCommits() {
 function main() {
   const args = process.argv.slice(2);
   const jsonOutput = args.includes("--json");
+  // 获取非 --json 的参数作为直接输入文本
+  const directInput = args.find((a) => a !== "--json");
 
   let priority = null;
   let source = null;
 
+  // 0. 直接命令行参数（用于测试）
+  if (directInput) {
+    const p = extractPriority(directInput);
+    if (p) {
+      priority = p;
+      source = "direct";
+    }
+  }
+
   // 1. 环境变量
-  if (process.env.PR_PRIORITY) {
+  if (!priority && process.env.PR_PRIORITY) {
     const p = extractPriority(process.env.PR_PRIORITY);
     if (p) {
       priority = p;
