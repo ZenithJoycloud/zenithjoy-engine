@@ -19,7 +19,6 @@ const ROOT = path.resolve(__dirname, '../..')
 const METRICS_SCRIPT = path.join(ROOT, 'scripts/devgate/metrics.sh')
 const METRICS_CJS = path.join(ROOT, 'scripts/devgate/metrics.cjs')
 const SNAPSHOT_SCRIPT = path.join(ROOT, 'scripts/devgate/snapshot-prd-dod.sh')
-const TEST_HISTORY_DIR = path.join(ROOT, '.test-metrics-history')
 
 /**
  * 执行命令并返回 stdout，即使退出码非零也不抛错
@@ -38,7 +37,7 @@ function runMetrics(args: string, cwd: string): string {
 }
 
 describe('snapshot-prd-dod.sh meta 增强', () => {
-  const testDir = path.join(tmpdir(), 'test-snapshot-meta')
+  const testDir = path.join(tmpdir(), `test-snapshot-meta-${Date.now()}`)
 
   beforeAll(() => {
     execSync(`rm -rf ${testDir} && mkdir -p ${testDir}`)
@@ -274,7 +273,7 @@ describe('metrics.sh 基础功能', () => {
 })
 
 describe('metrics.sh 指标计算', () => {
-  const testDir = path.join(tmpdir(), 'test-metrics-calc')
+  const testDir = path.join(tmpdir(), `test-metrics-calc-${Date.now()}`)
 
   beforeAll(() => {
     // 创建测试目录和 git repo
@@ -398,7 +397,7 @@ describe('metrics.sh 指标计算', () => {
 })
 
 describe('metrics.sh 时间窗口', () => {
-  const testDir = path.join(tmpdir(), 'test-metrics-window')
+  const testDir = path.join(tmpdir(), `test-metrics-window-${Date.now()}`)
 
   beforeAll(() => {
     execSync(`rm -rf ${testDir} && mkdir -p ${testDir}/.history`)
