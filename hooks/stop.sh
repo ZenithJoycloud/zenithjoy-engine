@@ -5,8 +5,34 @@
 # 会话结束前检查质检是否通过
 # 如果质检未通过，阻止会话结束，强制 AI 继续 Retry Loop
 # ============================================================================
+# 防止无限循环: 检查 stop_hook_active 标志
+# ============================================================================
 
 set -euo pipefail
+
+# ===== 读取 Hook 输入（JSON） =====
+# Stop Hook 接收 JSON 输入，包含 stop_hook_active 等字段
+HOOK_INPUT=$(cat)
+
+# ===== 检查是否已经因为 Stop Hook 而继续过一次 =====
+# 防止无限循环：如果 stop_hook_active=true，说明已经重试过了
+STOP_HOOK_ACTIVE=$(echo "$HOOK_INPUT" | jq -r '.stop_hook_active // false' 2>/dev/null || echo "false")
+
+if [[ "$STOP_HOOK_ACTIVE" == "true" ]]; then
+    echo "" >&2
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" >&2
+    echo "  [Stop Hook: 防止无限循环]" >&2
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" >&2
+    echo "" >&2
+    echo "  检测到 stop_hook_active=true" >&2
+    echo "  已经重试过一次，允许会话结束（防止无限循环）" >&2
+    echo "" >&2
+    echo "  如果质检仍未通过，请手动运行:" >&2
+    echo "    npm run qa:gate" >&2
+    echo "" >&2
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" >&2
+    exit 0  # 允许结束，防止无限循环
+fi
 
 # ===== 获取项目根目录 =====
 PROJECT_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"

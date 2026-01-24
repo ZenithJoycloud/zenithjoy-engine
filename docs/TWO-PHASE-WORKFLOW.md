@@ -94,7 +94,29 @@ echo "✅ 质检已通过！"
 exit 0  # ← 允许会话结束
 ```
 
-### 2. qa:gate 脚本（scripts/qa-with-gate.sh）
+### 2. 无限循环保护
+
+**检查 stop_hook_active 标志**:
+
+```bash
+# Stop Hook 读取输入
+HOOK_INPUT=$(cat)
+STOP_HOOK_ACTIVE=$(echo "$HOOK_INPUT" | jq -r '.stop_hook_active // false')
+
+if [[ "$STOP_HOOK_ACTIVE" == "true" ]]; then
+    echo "已经重试过一次，允许结束（防止无限循环）"
+    exit 0  # 允许结束
+fi
+```
+
+**工作原理**:
+- 第一次 Stop Hook 触发: `stop_hook_active=false` → 检查质检 → exit 2 阻止
+- AI 继续工作 → 运行质检
+- 第二次 Stop Hook 触发: `stop_hook_active=true` → exit 0 允许结束
+
+**防止**: AI 卡在无限循环中无法退出
+
+### 3. qa:gate 脚本（scripts/qa-with-gate.sh）
 
 **职责**: 运行质检，成功时生成门控文件
 
@@ -113,7 +135,13 @@ Generated: $(date)
 EOF
 ```
 
-### 3. Retry Loop
+### 3. Retry Loop（官方确认行为）
+
+**Stop Hook exit 2 → Blocks stoppage**（官方文档）
+
+根据 Claude Code 官方文档，Stop Hook 的 exit 2 会：
+- **Blocks stoppage**: 阻止会话结束
+- **Shows stderr to Claude**: 将错误信息显示给 Claude
 
 **AI 被迫循环**:
 
