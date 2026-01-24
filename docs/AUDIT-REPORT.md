@@ -17,7 +17,7 @@ changelog:
 
 ## 审计结果
 
-**Decision**: PASS
+Decision: PASS
 
 ---
 
