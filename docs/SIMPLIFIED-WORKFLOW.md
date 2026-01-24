@@ -58,7 +58,7 @@ changelog:
 
 ---
 
-## 两个 Hook 的职责
+## 两个 Hook 的职责（所有 8.x/9.0 要求 100% 保留）
 
 ### Hook 1: PreToolUse:Write/Edit（入口检查）
 
@@ -69,29 +69,45 @@ changelog:
 ✅ Repository（在 git 仓库中）
 ✅ Branch（cp-* 或 feature/*，不能在 main/develop）
 ✅ Worktree（检测并行开发，提示是否需要）
-✅ PRD 存在且有效（至少 3 行，包含关键字段）
-✅ DoD 存在且有效（至少 3 行，包含验收清单）
+✅ PRD 存在且有效（至少 3 行，包含关键字段）← 8.x/9.0 要求
+✅ DoD 存在且有效（至少 3 行，包含验收清单）← 8.x/9.0 要求（Gate Contract #1）
 ```
 
 **作用**: 保证进入正确的环境
 
 **强制能力**: ✅ 100%（唯一路径，无法绕过）
 
+**代码位置**: `hooks/branch-protect.sh:151-225`
+
 ---
 
-### Hook 2: Stop Hook（质检门控）
+### Hook 2: Stop Hook（质检门控）- **9.5.0 新增**
 
 **时机**: AI 尝试结束会话时
 
 **检查**:
 ```bash
-✅ Audit 审计通过（docs/AUDIT-REPORT.md 存在 + Decision: PASS）
-✅ 自动化测试通过（.quality-gate-passed 存在 + 时效性检查）
+✅ Audit 审计通过（docs/AUDIT-REPORT.md 存在 + Decision: PASS）← 9.5.0 新增强制
+✅ 自动化测试通过（.quality-gate-passed 存在 + 时效性检查）← 9.5.0 新增强制
 ```
+
+**8.x/9.0 vs 9.5.0**:
+- 8.x/9.0: ❌ 依赖 AI 自觉（0% 强制能力）
+- 9.5.0: ✅ Stop Hook 强制（100% 强制能力）
 
 **作用**: 跑不完不让结束
 
 **强制能力**: ✅ 100%（Stop Hook exit 2 阻止会话结束）
+
+**代码位置**: `hooks/stop.sh:66-156`
+
+**重点**:
+```bash
+# 如果 Audit 未通过或测试未通过
+exit 2  # ← 阻止会话结束
+        # ← Ralph Loop 继续循环
+        # ← AI 被迫修复问题
+```
 
 ---
 
@@ -126,6 +142,19 @@ changelog:
 # 阶段 1 完成后，手动或另一个 Ralph Loop 创建 PR
 gh pr create ...
 ```
+
+**PreToolUse:Bash (pr-gate-v2.sh) 检查**:
+```bash
+✅ DoD 检查（内容有效性）← 8.x/9.0 要求（Gate Contract #1）
+✅ DoD 引用 QA 决策 ← 8.x/9.0 要求
+✅ QA-DECISION.md 存在 + 有效 + Decision 字段 ← 8.x/9.0 要求（Gate Contract #2）
+✅ Audit 报告存在 + Decision: PASS
+✅ P0/P1 → RCI 检查 ← 8.x/9.0 要求
+✅ DoD ↔ Test 映射检查 ← 8.x/9.0 要求
+⚡ FAST_MODE: 跳过本地测试（已在 Stop Hook 强制通过）
+```
+
+**代码位置**: `hooks/pr-gate-v2.sh:423-569`
 
 ---
 
@@ -208,6 +237,52 @@ Ralph Loop
 ```
 
 **Over！** 🎉
+
+---
+
+## 8.x/9.0 所有要求 100% 保留验证
+
+### Gate Contract (6 大红线) - 全部保留
+
+| 要求 | 8.x/9.0 | 9.5.0 检查点 | 状态 |
+|------|---------|-------------|------|
+| 1. 空 DoD 必须 fail | pr-gate-v2.sh | ✅ PreToolUse:Write + PreToolUse:Bash | ✅ |
+| 2. QA 决策空内容必须 fail | pr-gate-v2.sh | ✅ PreToolUse:Bash | ✅ |
+| 3. P0wer 不应触发 P0 | detect-priority.cjs | ✅ detect-priority.cjs | ✅ |
+| 4. release 模式不跳过 RCI | pr-gate-v2.sh | ✅ pr-gate MODE=release | ✅ |
+| 5. 非白名单命令 fail | run-regression.sh | ✅ run-regression.sh | ✅ |
+| 6. checkout 失败不删分支 | cleanup.sh | ✅ cleanup.sh | ✅ |
+
+### 9.5.0 新增强化（Stop Hook）
+
+| 检查项 | 8.x/9.0 | 9.5.0 | 强制能力 |
+|--------|---------|-------|----------|
+| Audit 执行 | ❌ 0% (AI 自觉) | ✅ Stop Hook | 100% |
+| 测试执行 | ❌ 0% (AI 自觉) | ✅ Stop Hook | 100% |
+| 质检时效性 | ❌ 无检查 | ✅ Stop Hook | 100% |
+| 无限循环保护 | ❌ 无 | ✅ stop_hook_active | 100% |
+| 测试超时保护 | ❌ 无 | ✅ 120s timeout | 100% |
+
+### Ralph Loop 100% 自动执行
+
+**用户视角**:
+```bash
+# 用户只需要做的事
+/ralph-loop "实现功能 X（包含 PRD + DoD）"
+
+# Ralph 自动完成（无需人工干预）:
+1. ✅ 写代码（遵守 PRD）
+2. ✅ 写测试（满足 DoD）
+3. ✅ 调用 /audit（生成 QA-DECISION.md）← 8.x/9.0 要求
+4. ✅ 运行 npm run qa:gate（生成 .quality-gate-passed）
+5. ✅ 失败自动修复重试（Stop Hook 强制）← 9.5.0 新增
+6. ✅ 全部通过后结束
+
+# 阶段 2: 创建 PR
+gh pr create ...  # 所有 8.x/9.0 检查自动执行
+```
+
+**详细验证**: 见 `docs/REQUIREMENT-VERIFICATION.md`
 
 ---
 
