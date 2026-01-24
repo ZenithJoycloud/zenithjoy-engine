@@ -1181,6 +1181,46 @@ export:
       description: "返回 L1/L2/L3 状态对象"
     test: "skills/dev/scripts/generate-report.sh"
 
+  # --------------------------------------------------------------------------
+  # E3: Assurance Skill
+  # --------------------------------------------------------------------------
+  - id: E3-001
+    feature: E3
+    name: "/assurance 保证级别评估"
+    scope: skill
+    priority: P2
+    trigger: [Release]
+    method: manual
+    tags: [skill, assurance, quality]
+    owner: qa
+    steps:
+      given: "需要评估系统保证级别"
+      when: "运行 /assurance skill"
+      then: "提供 L1/L2/L3/L4 分层保证评估"
+    evidence:
+      type: manual
+      desc: "验证 assurance 评估流程"
+
+  # --------------------------------------------------------------------------
+  # E4: Audit Skill
+  # --------------------------------------------------------------------------
+  - id: E4-001
+    feature: E4
+    name: "/audit 代码审计与修复"
+    scope: skill
+    priority: P2
+    trigger: [Release]
+    method: manual
+    tags: [skill, audit, quality]
+    owner: qa
+    steps:
+      given: "需要审计代码质量"
+      when: "运行 /audit skill"
+      then: "执行 L1-L4 分层审计，修复到目标层级"
+    evidence:
+      type: manual
+      desc: "验证 audit 流程和边界控制"
+
 # ============================================================================
 # N8N Integration 回归契约
 # ============================================================================
