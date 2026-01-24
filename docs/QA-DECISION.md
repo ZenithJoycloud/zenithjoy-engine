@@ -1,43 +1,17 @@
-# QA Decision
+# QA Decision: v10.0.0 生产就绪报告
 
-Decision: MANUAL_ONLY
-Priority: P1
-RepoType: Engine
+## Decision
+**L0 - 无需测试**
 
-Tests:
-  - dod_item: "auto-merge.yml 工作流文件存在"
-    method: manual
-    location: manual:file-check
-  - dod_item: "工作流监听正确的事件"
-    method: manual
-    location: manual:code-review
-  - dod_item: "检查逻辑正确"
-    method: manual
-    location: manual:code-review
-  - dod_item: "使用 squash merge 策略"
-    method: manual
-    location: manual:code-review
-  - dod_item: "创建测试 PR"
-    method: manual
-    location: manual:github-pr
-  - dod_item: "CI 通过后手动 approve"
-    method: manual
-    location: manual:github-pr
-  - dod_item: "工作流自动触发"
-    method: manual
-    location: manual:github-actions
-  - dod_item: "PR 自动合并成功"
-    method: manual
-    location: manual:github-pr
-  - dod_item: "CI 全绿"
-    method: auto
-    location: contract:C2-001
-  - dod_item: "代码审计通过"
-    method: manual
-    location: manual:audit
+## 测试策略
+纯文档任务，无代码变更。
 
-RCI:
-  new: []
-  update: []
+## 理由
+- 创建生产就绪报告文档
+- 无代码变更
+- 无功能变更
+- 内容来自已验证的红队证据
 
-Reason: P1 配置任务 - 添加 GitHub Actions 自动合并工作流。配置文件类任务，无核心业务逻辑，手动测试即可，不需要添加 RCI 条目。
+## 验收方式
+- 手动内容审查
+- CI 通过（确保无意外文件）
