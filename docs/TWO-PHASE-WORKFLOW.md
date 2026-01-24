@@ -3,11 +3,22 @@ id: two-phase-workflow
 version: 1.0.0
 created: 2026-01-24
 updated: 2026-01-24
+status: DEPRECATED
 changelog:
   - 1.0.0: 两阶段工作流设计 - Stop Hook 强制本地质检
 ---
 
-# 两阶段工作流
+# ⚠️ DEPRECATED - 两阶段工作流
+
+**本文档已过时。请使用 v10.0.0 权威文档：**
+- **权威**: [`docs/contracts/WORKFLOW-CONTRACT.md`](./contracts/WORKFLOW-CONTRACT.md)
+- **自动生成视图**: [`docs/paths/GOLDEN-PATHS.md`](./paths/GOLDEN-PATHS.md)
+
+**不要使用本文档**。本文档描述的是 v9.5.0 的两阶段工作流，使用"100%强制"和"Ralph Loop"概念，这些在 v10.0.0 Contract Rebase 后已被废弃。
+
+---
+
+# 两阶段工作流（已废弃描述）
 
 **核心思想**: 用 Stop Hook 强制本地质检，阻止未完成质检就退出会话
 

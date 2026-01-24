@@ -12,7 +12,7 @@ description: |
 
   v2.0.0 变更：
   - 两阶段分离：p0 (发 PR) + p1 (修 CI)
-  - Stop Hook 强制质检（100% 能力）
+  - Stop Hook 强制质检（会话结束时强制）
   - 事件驱动循环（不挂着等待）
 ---
 
@@ -65,7 +65,7 @@ bash scripts/detect-phase.sh
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│              p0: Published 阶段（Ralph Loop 1）          │
+│                 p0: Published 阶段                       │
 ├─────────────────────────────────────────────────────────┤
 │                                                         │
 │  阶段检测 (scripts/detect-phase.sh)                     │
@@ -88,7 +88,7 @@ bash scripts/detect-phase.sh
 │  质检循环 (07-quality.md) ← Stop Hook 强制              │
 │      │   L2A: Audit (Decision: PASS)                    │
 │      │   L1: npm run qa:gate                            │
-│      │   失败 → 修复 → 重试（Ralph Loop）               │
+│      │   失败 → 修复 → 重试（质检循环）                 │
 │      ↓                                                  │
 │  提交 PR (08-pr.md)                                     │
 │      │   Stop Hook: PR 创建后立即结束                   │
@@ -103,7 +103,7 @@ bash scripts/detect-phase.sh
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│           p1: CI fail 修复（Ralph Loop 2）              │
+│            p1: CI fail 修复（事件驱动）                  │
 ├─────────────────────────────────────────────────────────┤
 │                                                         │
 │  阶段检测 (scripts/detect-phase.sh)                     │

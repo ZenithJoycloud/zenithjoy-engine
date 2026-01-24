@@ -3,11 +3,22 @@ id: stop-hook-spec
 version: 1.0.0
 created: 2026-01-24
 updated: 2026-01-24
+status: DEPRECATED
 changelog:
   - 1.0.0: Stop Hook 两阶段分离规格说明
 ---
 
-# Stop Hook 规格说明（完全不歧义版）
+# ⚠️ DEPRECATED - Stop Hook 规格说明
+
+**本文档已过时。请使用 v10.0.0 权威文档：**
+- **权威**: [`docs/contracts/WORKFLOW-CONTRACT.md`](./contracts/WORKFLOW-CONTRACT.md)
+- **权威**: [`docs/contracts/QUALITY-CONTRACT.md`](./contracts/QUALITY-CONTRACT.md)
+
+**不要使用本文档**。v10.0.0 Contract Rebase 后，所有流程规格以 contracts/ 下的文档为准。
+
+---
+
+# Stop Hook 规格说明（已废弃描述）
 
 **核心原则**: Stop Hook 只做"本阶段的结束条件检查"，不跨阶段
 
