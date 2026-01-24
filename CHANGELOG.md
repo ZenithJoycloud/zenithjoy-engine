@@ -7,6 +7,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [9.5.0] - 2026-01-24
+
+### Added
+
+- **两阶段工作流**: 用 Stop Hook 强制本地质检（100% 强制能力）
+  - 阶段 1: 本地开发 + 质检（Stop Hook 阻止未质检退出）
+  - 阶段 2: 提交 PR + CI（服务器端验证）
+  - hooks/stop.sh: 质检门控，检查 .quality-gate-passed 存在性和时效性
+  - scripts/qa-with-gate.sh: 运行质检，成功时生成门控文件
+  - npm run qa:gate: 带门控的质检命令
+  - Retry Loop: AI 被迫循环直到质检通过
+  - 时效性检查: 代码改动后质检结果失效，必须重新质检
+
+### Changed
+
+- **pr-gate-v2.sh v4.0**: 快速模式（FAST_MODE=true）
+  - 只检查产物存在性，不运行测试
+  - 测试已在阶段 1 通过 Stop Hook 强制完成
+  - 减少 PR 创建等待时间
+
+### Documentation
+
+- docs/TWO-PHASE-WORKFLOW.md: 完整的两阶段工作流文档
+- 说明真正有强制能力的只有 2 个 Hook: PreToolUse:Write 和 Stop
+
+## [9.4.1] - 2026-01-24
+
+### Fixed
+
+- **pr-gate-v2.sh v3.1**: 添加 timeout 保护，防止测试命令卡住
+  - 所有测试命令（typecheck, lint, test, build, pytest, go test）添加 120s 超时
+  - 超时时明确提示 `[TIMEOUT - 120s]` 而不是无限等待
+  - 降级支持：系统没有 timeout 命令时直接运行（旧版 macOS）
+  - 修复用户发现的关键漏洞：测试卡住时 Hook 永远等待的问题
+
 ## [9.4.0] - 2026-01-24
 
 ### Added
