@@ -29,8 +29,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Documentation
 
-- docs/TWO-PHASE-WORKFLOW.md: 完整的两阶段工作流文档
-- 说明真正有强制能力的只有 2 个 Hook: PreToolUse:Write 和 Stop
+- **极简工作流**: PreToolUse + Ralph Loop + Stop Hook
+  - docs/SIMPLIFIED-WORKFLOW.md: 极简流程说明（一句话：PreToolUse 管入口，Ralph Loop 自己跑，Stop Hook 管出口）
+  - docs/COMPLETE-WORKFLOW-WITH-RALPH.md: Ralph Loop 完整流程图和使用示例
+  - docs/TWO-PHASE-WORKFLOW.md: 两阶段工作流详细文档
+  - 集成 Ralph Wiggum 官方插件（已安装）
+  - 说明真正有强制能力的只有 2 个 Hook: PreToolUse:Write 和 Stop
+
+### Integration
+
+- **Ralph Loop 集成**: 与 Stop Hook 协作实现自动质检循环
+  - Ralph Loop: 外层循环，重复注入任务提示语
+  - Stop Hook: 质检门控，跑不完不让结束
+  - completion-promise: Ralph 的结束信号
+  - max-iterations: 防止无限循环（双重保护）
 
 ## [9.4.1] - 2026-01-24
 
