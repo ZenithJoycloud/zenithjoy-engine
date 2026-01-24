@@ -1300,7 +1300,7 @@ n8n:
     evidence:
       type: command
       run: "bash scripts/run-regression.sh --dry-run"
-      contains: "tests/"
+      contains: "Dry Run"
     test: "bash scripts/run-regression.sh --dry-run"
 
   - id: P1-003
