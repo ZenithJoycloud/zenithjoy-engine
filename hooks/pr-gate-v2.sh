@@ -1,12 +1,22 @@
 #!/usr/bin/env bash
 # ============================================================================
-# PreToolUse Hook: PR Gate v3.0
+# PreToolUse Hook: PR Gate v4.0
 # ============================================================================
 # PR -> develop: L1 全自动绿 + DoD 映射检查 + P0/P1 RCI 检查 + Skill 产物
 # develop -> main: L1 绿 + L2B/L3 证据链齐全
 # ============================================================================
+# v3.1: 添加 timeout 保护，防止测试命令卡住
+# v4.0: 快速模式 - 只检查产物，不运行测试（交给 CI + SessionEnd Hook）
+# ============================================================================
 
 set -euo pipefail
+
+# ===== 配置 =====
+# 快速模式：true=只检查产物，false=运行完整测试
+FAST_MODE=true
+
+# 测试命令超时时间（秒）- 仅在 FAST_MODE=false 时使用
+COMMAND_TIMEOUT=120
 
 # ===== 工具函数 =====
 
@@ -15,6 +25,24 @@ clean_number() {
     local val="${1:-0}"
     val="${val//[^0-9]/}"
     echo "${val:-0}"
+}
+
+# 带 timeout 的命令执行
+# 用法: run_with_timeout <timeout_seconds> <command...>
+# 返回值: 0=成功, 1=失败, 124=超时
+run_with_timeout() {
+    local timeout_sec="$1"
+    shift
+
+    # 检查 timeout 命令是否可用
+    if command -v timeout &>/dev/null; then
+        timeout "$timeout_sec" "$@"
+        return $?
+    else
+        # 降级：没有 timeout 命令，直接运行（有风险）
+        "$@"
+        return $?
+    fi
 }
 
 # ===== jq 检查 =====
@@ -52,8 +80,31 @@ fi
 # 提取 command
 COMMAND=$(echo "$INPUT" | jq -r '.tool_input.command // ""' 2>/dev/null || echo "")
 
-# 只拦截 gh pr create
-if [[ "$COMMAND" != *"gh pr create"* ]]; then
+# 拦截所有可能创建 PR 的命令
+# 1. gh pr create
+# 2. gh api -X POST .../pulls
+# 3. curl -X POST .../pulls
+# 4. 其他 API 调用方式
+
+IS_PR_CREATION=false
+
+# 检查 gh pr create
+if [[ "$COMMAND" == *"gh pr create"* ]]; then
+    IS_PR_CREATION=true
+fi
+
+# 检查 gh api 创建 PR（repos/.../pulls 或 repos/.../git/refs）
+if [[ "$COMMAND" == *"gh api"* ]] && [[ "$COMMAND" == *"/pulls"* ]]; then
+    IS_PR_CREATION=true
+fi
+
+# 检查 curl 创建 PR
+if [[ "$COMMAND" == *"curl"* ]] && [[ "$COMMAND" == *"api.github.com"* ]] && [[ "$COMMAND" == *"/pulls"* ]]; then
+    IS_PR_CREATION=true
+fi
+
+# 如果不是创建 PR 的命令，放行
+if [[ "$IS_PR_CREATION" == "false" ]]; then
     exit 0
 fi
 
@@ -194,6 +245,16 @@ fi
 echo "" >&2
 echo "  [L1: 自动化测试]" >&2
 
+# v4.0: 快速模式检查
+if [ "$FAST_MODE" = "true" ]; then
+    echo "  ⚡ 快速模式：跳过本地测试，交给 CI" >&2
+    echo "    (会话结束时 SessionEnd Hook 会检查 CI 状态)" >&2
+    echo "" >&2
+else
+    echo "  🐢 完整模式：本地运行所有测试" >&2
+    echo "" >&2
+fi
+
 # L3 修复: 改用位标志检测项目类型
 PROJECT_TYPE=0  # 位标志: 1=node, 2=python, 4=go
 [[ -f "$PROJECT_ROOT/package.json" ]] && PROJECT_TYPE=$((PROJECT_TYPE | 1))
@@ -207,55 +268,80 @@ trap 'rm -f "$TEST_OUTPUT_FILE"' EXIT
 # Node.js 项目 (PROJECT_TYPE & 1)
 if (( PROJECT_TYPE & 1 )); then
     # Typecheck
-    if grep -q '"typecheck"' package.json 2>/dev/null; then
+    if grep -q '"typecheck"' package.json 2>/dev/null && [ "$FAST_MODE" != "true" ]; then
         echo -n "  typecheck... " >&2
         CHECK_COUNT=$((CHECK_COUNT + 1))
         # L2 修复: 保存测试输出到文件
-        if npm run typecheck >"$TEST_OUTPUT_FILE" 2>&1; then
+        # v3.1: 添加 timeout 保护
+        if run_with_timeout "$COMMAND_TIMEOUT" npm run typecheck >"$TEST_OUTPUT_FILE" 2>&1; then
             echo "[OK]" >&2
         else
-            echo "[FAIL]" >&2
-            # 显示最后几行错误
-            tail -10 "$TEST_OUTPUT_FILE" >&2 || true
+            EXIT_CODE=$?
+            if [ $EXIT_CODE -eq 124 ]; then
+                echo "[TIMEOUT - ${COMMAND_TIMEOUT}s]" >&2
+                echo "    测试命令超时，可能卡住了" >&2
+            else
+                echo "[FAIL]" >&2
+                # 显示最后几行错误
+                tail -10 "$TEST_OUTPUT_FILE" >&2 || true
+            fi
             FAILED=1
         fi
     fi
 
     # Lint
-    if grep -q '"lint"' package.json 2>/dev/null; then
+    if grep -q '"lint"' package.json 2>/dev/null && [ "$FAST_MODE" != "true" ]; then
         echo -n "  lint... " >&2
         CHECK_COUNT=$((CHECK_COUNT + 1))
-        if npm run lint >"$TEST_OUTPUT_FILE" 2>&1; then
+        if run_with_timeout "$COMMAND_TIMEOUT" npm run lint >"$TEST_OUTPUT_FILE" 2>&1; then
             echo "[OK]" >&2
         else
-            echo "[FAIL]" >&2
-            tail -10 "$TEST_OUTPUT_FILE" >&2 || true
+            EXIT_CODE=$?
+            if [ $EXIT_CODE -eq 124 ]; then
+                echo "[TIMEOUT - ${COMMAND_TIMEOUT}s]" >&2
+                echo "    测试命令超时，可能卡住了" >&2
+            else
+                echo "[FAIL]" >&2
+                tail -10 "$TEST_OUTPUT_FILE" >&2 || true
+            fi
             FAILED=1
         fi
     fi
 
     # Test
-    if grep -q '"test"' package.json 2>/dev/null; then
+    if grep -q '"test"' package.json 2>/dev/null && [ "$FAST_MODE" != "true" ]; then
         echo -n "  test... " >&2
         CHECK_COUNT=$((CHECK_COUNT + 1))
-        if npm test >"$TEST_OUTPUT_FILE" 2>&1; then
+        if run_with_timeout "$COMMAND_TIMEOUT" npm test >"$TEST_OUTPUT_FILE" 2>&1; then
             echo "[OK]" >&2
         else
-            echo "[FAIL]" >&2
-            tail -10 "$TEST_OUTPUT_FILE" >&2 || true
+            EXIT_CODE=$?
+            if [ $EXIT_CODE -eq 124 ]; then
+                echo "[TIMEOUT - ${COMMAND_TIMEOUT}s]" >&2
+                echo "    测试命令超时，可能卡住了" >&2
+            else
+                echo "[FAIL]" >&2
+                tail -10 "$TEST_OUTPUT_FILE" >&2 || true
+            fi
             FAILED=1
         fi
     fi
 
     # Build
-    if grep -q '"build"' package.json 2>/dev/null; then
+    if grep -q '"build"' package.json 2>/dev/null && [ "$FAST_MODE" != "true" ]; then
         echo -n "  build... " >&2
         CHECK_COUNT=$((CHECK_COUNT + 1))
-        if npm run build >"$TEST_OUTPUT_FILE" 2>&1; then
+        if run_with_timeout "$COMMAND_TIMEOUT" npm run build >"$TEST_OUTPUT_FILE" 2>&1; then
             echo "[OK]" >&2
         else
-            echo "[FAIL]" >&2
-            tail -10 "$TEST_OUTPUT_FILE" >&2 || true
+            EXIT_CODE=$?
+            if [ $EXIT_CODE -eq 124 ]; then
+                echo "[TIMEOUT - ${COMMAND_TIMEOUT}s]" >&2
+                echo "    测试命令超时，可能卡住了" >&2
+            else
+                echo "[FAIL]" >&2
+                tail -10 "$TEST_OUTPUT_FILE" >&2 || true
+            fi
             FAILED=1
         fi
     fi
@@ -267,11 +353,18 @@ if (( PROJECT_TYPE & 2 )); then
         echo -n "  pytest... " >&2
         CHECK_COUNT=$((CHECK_COUNT + 1))
         # L2 修复: 保存 pytest 输出
-        if pytest -q >"$TEST_OUTPUT_FILE" 2>&1; then
+        # v3.1: 添加 timeout 保护
+        if run_with_timeout "$COMMAND_TIMEOUT" pytest -q >"$TEST_OUTPUT_FILE" 2>&1; then
             echo "[OK]" >&2
         else
-            echo "[FAIL]" >&2
-            tail -10 "$TEST_OUTPUT_FILE" >&2 || true
+            EXIT_CODE=$?
+            if [ $EXIT_CODE -eq 124 ]; then
+                echo "[TIMEOUT - ${COMMAND_TIMEOUT}s]" >&2
+                echo "    测试命令超时，可能卡住了" >&2
+            else
+                echo "[FAIL]" >&2
+                tail -10 "$TEST_OUTPUT_FILE" >&2 || true
+            fi
             FAILED=1
         fi
     fi
@@ -282,11 +375,18 @@ if (( PROJECT_TYPE & 4 )); then
     echo -n "  go test... " >&2
     CHECK_COUNT=$((CHECK_COUNT + 1))
     # L2 修复: 保存 go test 输出
-    if go test ./... >"$TEST_OUTPUT_FILE" 2>&1; then
+    # v3.1: 添加 timeout 保护
+    if run_with_timeout "$COMMAND_TIMEOUT" go test ./... >"$TEST_OUTPUT_FILE" 2>&1; then
         echo "[OK]" >&2
     else
-        echo "[FAIL]" >&2
-        tail -10 "$TEST_OUTPUT_FILE" >&2 || true
+        EXIT_CODE=$?
+        if [ $EXIT_CODE -eq 124 ]; then
+            echo "[TIMEOUT - ${COMMAND_TIMEOUT}s]" >&2
+            echo "    测试命令超时，可能卡住了" >&2
+        else
+            echo "[FAIL]" >&2
+            tail -10 "$TEST_OUTPUT_FILE" >&2 || true
+        fi
         FAILED=1
     fi
 fi
