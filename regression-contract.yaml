@@ -1225,6 +1225,66 @@ n8n:
       contains: "p1.*CI pending.*exit 0"
     test: "手动模拟 p1 场景"
 
+  # --------------------------------------------------------------------------
+  # P1: Regression Testing Framework - 回归测试框架
+  # --------------------------------------------------------------------------
+  - id: P1-001
+    feature: P1
+    name: "rc-filter.sh 正确过滤 RCI"
+    scope: regression
+    priority: P0
+    trigger: [PR, Release]
+    method: auto
+    tags: [regression, filter, pr, release]
+    owner: qa
+    steps:
+      given: "regression-contract.yaml 存在多个 trigger 的 RCI"
+      when: "运行 bash scripts/rc-filter.sh pr"
+      then: "只输出 trigger 包含 PR 的 RCI id"
+    evidence:
+      type: command
+      run: "bash scripts/rc-filter.sh pr | head -5"
+      contains: "H1-001|H2-001"
+    test: "bash scripts/rc-filter.sh pr && bash scripts/rc-filter.sh release"
+
+  - id: P1-002
+    feature: P1
+    name: "run-regression.sh 执行回归测试"
+    scope: regression
+    priority: P0
+    trigger: [Release]
+    method: auto
+    tags: [regression, execution]
+    owner: qa
+    steps:
+      given: "RCI 定义存在"
+      when: "运行 bash scripts/run-regression.sh"
+      then: "执行对应的自动化测试"
+    evidence:
+      type: command
+      run: "bash scripts/run-regression.sh --dry-run"
+      contains: "tests/"
+    test: "bash scripts/run-regression.sh --dry-run"
+
+  - id: P1-003
+    feature: P1
+    name: "regression-contract.yaml 格式解析"
+    scope: regression
+    priority: P0
+    trigger: [PR, Release]
+    method: auto
+    tags: [regression, yaml, validation]
+    owner: qa
+    steps:
+      given: "regression-contract.yaml 存在"
+      when: "使用 yq 解析 YAML 结构"
+      then: "成功解析 rci_definitions 数组"
+    evidence:
+      type: command
+      run: "yq '.rci_definitions | length' regression-contract.yaml"
+      contains: "[0-9]+"
+    test: "yq '.rci_definitions[] | select(.id == \"H1-001\")' regression-contract.yaml"
+
 # ============================================================================
 # Golden Paths (E2E 关键链路)
 # ============================================================================
