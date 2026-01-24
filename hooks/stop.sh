@@ -54,33 +54,74 @@ if [[ ! "$CURRENT_BRANCH" =~ ^cp- ]] && [[ ! "$CURRENT_BRANCH" =~ ^feature/ ]]; 
     exit 0  # 不是功能分支，跳过（main/develop 可以正常退出）
 fi
 
-# ===== 检查质检门控文件 =====
-QUALITY_GATE_FILE="$PROJECT_ROOT/.quality-gate-passed"
-
+# ===== Step 7 质检流程检查 =====
 echo "" >&2
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" >&2
-echo "  [Stop Hook: 质检门控]" >&2
+echo "  [Stop Hook: Step 7 质检门控]" >&2
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" >&2
 echo "" >&2
 echo "  分支: $CURRENT_BRANCH" >&2
 echo "" >&2
 
+# ===== Step 7.1: 检查 Audit 报告 (L2A) =====
+AUDIT_REPORT="$PROJECT_ROOT/docs/AUDIT-REPORT.md"
+
+if [[ ! -f "$AUDIT_REPORT" ]]; then
+    echo "  ❌ Step 7.1: Audit 报告缺失！" >&2
+    echo "" >&2
+    echo "  找不到: docs/AUDIT-REPORT.md" >&2
+    echo "" >&2
+    echo "  你需要:" >&2
+    echo "    1. 调用 /audit Skill 生成审计报告" >&2
+    echo "    2. 或手动创建 docs/AUDIT-REPORT.md" >&2
+    echo "" >&2
+    echo "  参考: skills/dev/steps/07-quality.md" >&2
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" >&2
+    exit 2
+fi
+
+# ===== Step 7.2: 检查 Audit Decision (Blocker) =====
+AUDIT_DECISION=$(grep -i "^Decision:" "$AUDIT_REPORT" | head -1 | awk '{print $2}' | tr -d ' \n\r')
+
+if [[ "$AUDIT_DECISION" != "PASS" ]]; then
+    echo "  ❌ Step 7.2: Audit 未通过！" >&2
+    echo "" >&2
+    echo "  当前 Decision: $AUDIT_DECISION" >&2
+    echo "" >&2
+    echo "  Audit 报告显示有 blocker（L1/L2 问题）" >&2
+    echo "" >&2
+    echo "  你需要:" >&2
+    echo "    1. 查看 docs/AUDIT-REPORT.md 中的 Findings" >&2
+    echo "    2. 修复所有 L1 和 L2 问题" >&2
+    echo "    3. 重新运行 /audit" >&2
+    echo "    4. 确保 Decision: PASS" >&2
+    echo "" >&2
+    echo "  (Retry Loop: Audit → FAIL → 修复 → 重新审计)" >&2
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" >&2
+    exit 2
+fi
+
+echo "  ✅ Step 7.1: Audit 报告存在" >&2
+echo "  ✅ Step 7.2: Decision: PASS (无 blocker)" >&2
+echo "" >&2
+
+# ===== Step 7.3: 检查自动化测试 (L1) =====
+QUALITY_GATE_FILE="$PROJECT_ROOT/.quality-gate-passed"
+
 if [[ ! -f "$QUALITY_GATE_FILE" ]]; then
-    echo "  ❌ 质检未通过！" >&2
+    echo "  ❌ Step 7.3: 自动化测试未通过！" >&2
     echo "" >&2
     echo "  找不到质检门控文件: .quality-gate-passed" >&2
     echo "" >&2
     echo "  你需要:" >&2
-    echo "    1. 运行质检: npm run qa" >&2
-    echo "    2. 修复所有失败的测试" >&2
-    echo "    3. 确保生成 .quality-gate-passed 文件" >&2
+    echo "    1. 运行: npm run qa:gate" >&2
+    echo "    2. 确保 typecheck + test + build 全部通过" >&2
+    echo "    3. 生成 .quality-gate-passed 文件" >&2
     echo "" >&2
-    echo "  如果测试失败，请修复后重新运行 npm run qa" >&2
+    echo "  如果测试失败，请修复后重新运行 npm run qa:gate" >&2
     echo "  (Retry Loop: 失败 → 修复 → 再试，直到通过)" >&2
     echo "" >&2
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" >&2
-
-    # exit 2: 阻止会话结束
     exit 2
 fi
 
@@ -113,12 +154,20 @@ if (( LATEST_CODE_MTIME > GATE_MTIME )); then
     exit 2
 fi
 
-# ===== 质检通过 =====
-echo "  ✅ 质检已通过！" >&2
+# ===== Step 7 全部通过 =====
+echo "  ✅ Step 7.3: 自动化测试通过 (L1)" >&2
 echo "" >&2
-echo "  质检时间: $(date -d @$GATE_MTIME '+%Y-%m-%d %H:%M:%S' 2>/dev/null || date -r $GATE_MTIME '+%Y-%m-%d %H:%M:%S' 2>/dev/null)" >&2
+echo "  质检完成时间: $(date -d @$GATE_MTIME '+%Y-%m-%d %H:%M:%S' 2>/dev/null || date -r $GATE_MTIME '+%Y-%m-%d %H:%M:%S' 2>/dev/null)" >&2
 echo "" >&2
-echo "  下一步: 创建 PR" >&2
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" >&2
+echo "  ✅ Step 7 质检全部通过！" >&2
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" >&2
+echo "" >&2
+echo "  完成项:" >&2
+echo "    ✅ L2A: Audit 审计 (Decision: PASS)" >&2
+echo "    ✅ L1: 自动化测试 (typecheck + test + build)" >&2
+echo "" >&2
+echo "  下一步: Step 8 提交 PR" >&2
 echo "    gh pr create --title \"...\" --body \"...\"" >&2
 echo "" >&2
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" >&2

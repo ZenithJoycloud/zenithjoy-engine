@@ -72,25 +72,46 @@ CI 运行（服务器端）
 
 ### 1. Stop Hook（hooks/stop.sh）
 
-**职责**: 质检门控，阻止未质检就退出
+**职责**: Step 7 完整质检门控，阻止未完成质检就退出
+
+**检查流程**（完整的 Step 7）:
 
 ```bash
-# 检查质检门控文件
+# Step 7.1: 检查 Audit 报告 (L2A)
+if [[ ! -f "docs/AUDIT-REPORT.md" ]]; then
+    echo "❌ Step 7.1: Audit 报告缺失！"
+    echo "请调用 /audit Skill"
+    exit 2  # ← 阻止会话结束
+fi
+
+# Step 7.2: 检查 Audit Decision (Blocker)
+DECISION=$(grep "^Decision:" docs/AUDIT-REPORT.md | awk '{print $2}')
+if [[ "$DECISION" != "PASS" ]]; then
+    echo "❌ Step 7.2: Audit 未通过！"
+    echo "当前 Decision: $DECISION"
+    echo "请修复 L1/L2 问题后重新审计"
+    echo "(Retry Loop: Audit → FAIL → 修复 → 重新审计)"
+    exit 2  # ← 阻止会话结束
+fi
+
+# Step 7.3: 检查自动化测试 (L1)
 if [[ ! -f ".quality-gate-passed" ]]; then
-    echo "❌ 质检未通过！"
+    echo "❌ Step 7.3: 自动化测试未通过！"
     echo "请运行: npm run qa:gate"
     exit 2  # ← 阻止会话结束
 fi
 
-# 检查质检时效性（代码改动后需重新质检）
+# 时效性检查（代码改动后需重新质检）
 if (( 最新代码时间 > 质检文件时间 )); then
     echo "⚠️ 代码已修改，质检结果过期！"
     echo "请重新运行: npm run qa:gate"
     exit 2  # ← 阻止会话结束
 fi
 
-# 全部通过
-echo "✅ 质检已通过！"
+# Step 7 全部通过
+echo "✅ Step 7 质检全部通过！"
+echo "  ✅ L2A: Audit 审计 (Decision: PASS)"
+echo "  ✅ L1: 自动化测试 (typecheck + test + build)"
 exit 0  # ← 允许会话结束
 ```
 
