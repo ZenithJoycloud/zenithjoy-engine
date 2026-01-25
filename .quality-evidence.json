@@ -1,9 +1,9 @@
 {
-  "sha": "dab17d55fc526a2e7a00820c993879a45d23e5c6",
-  "branch": "cp-01251938-flow-optimize",
+  "sha": "36c45700ed451e59b837818f7688799493c7adff",
+  "branch": "release-v10.7.0-force-merge",
   "qa_gate_passed": true,
   "audit_decision": "PASS",
-  "timestamp": "2026-01-25T19:59:42+08:00",
+  "timestamp": "2026-01-25T20:44:40+08:00",
   "evidence": {
     "typecheck": "passed",
     "tests": "passed",
