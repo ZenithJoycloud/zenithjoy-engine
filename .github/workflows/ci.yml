@@ -730,17 +730,18 @@ jobs:
             exit 0
           fi
 
+          # 构建 JSON payload
+          DIFF_CONTENT=$(jq -Rs . < pr.diff)
+          JSON_PAYLOAD=$(jq -n \
+            --arg pr_number "${{ github.event.pull_request.number }}" \
+            --arg repo "${{ github.repository }}" \
+            --argjson diff "$DIFF_CONTENT" \
+            '{pr_number: $pr_number, repo: $repo, diff: $diff}')
+
           # 调用 VPS Review API
           RESPONSE=$(curl -s -X POST "$VPS_REVIEW_URL" \
             -H "Content-Type: application/json" \
-            -d @- <<EOF
-{
-  "pr_number": "${{ github.event.pull_request.number }}",
-  "repo": "${{ github.repository }}",
-  "diff": $(jq -Rs . < pr.diff)
-}
-EOF
-          )
+            -d "$JSON_PAYLOAD")
 
           # 保存响应
           echo "$RESPONSE" > review.json
