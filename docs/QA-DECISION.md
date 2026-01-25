@@ -1,7 +1,7 @@
 # QA Decision
 
 Decision: NO_RCI
-Priority: P2
+Priority: P3
 RepoType: Engine
 
 ## 分析
@@ -47,4 +47,4 @@ update: []
 
 ## Reason
 
-临时压力测试，不需要纳入回归契约。
+临时压力测试，P3 优先级，不需要纳入回归契约。
