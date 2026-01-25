@@ -1,9 +1,9 @@
 {
-  "sha": "3b460ab4b4a4959e708b37233714290b42992426",
-  "branch": "cp-01251439-really-remove-fast-mode",
+  "sha": "4a135174d0381518fbc8f9fd65672dd5ed228b7c",
+  "branch": "cp-01251504-ci-l2a-gate",
   "qa_gate_passed": true,
   "audit_decision": "PASS",
-  "timestamp": "2026-01-25T15:00:14+08:00",
+  "timestamp": "2026-01-25T16:23:26+08:00",
   "evidence": {
     "typecheck": "passed",
     "tests": "passed",
