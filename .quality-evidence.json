@@ -1,0 +1,14 @@
+{
+  "sha": "947cfae7a0efea3c2fdbc70698d076ca12999d25",
+  "branch": "cp-01242217-p0-quality-enforcement",
+  "qa_gate_passed": true,
+  "audit_decision": "PASS",
+  "timestamp": "2026-01-25T17:53:44+08:00",
+  "evidence": {
+    "typecheck": "passed",
+    "tests": "passed",
+    "build": "success",
+    "audit_l1": 0,
+    "audit_l2": 0
+  }
+}
