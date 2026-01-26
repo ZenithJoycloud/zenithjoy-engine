@@ -7,6 +7,47 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [10.8.3] - 2026-01-26
+
+### Fixed
+
+- **修复 QA Decision：更新为 PASS**
+  - QA-DECISION.md Decision 从 MUST_ADD_RCI 更新为 PASS
+  - RCI W1-004 已添加到回归契约
+
+## [10.8.2] - 2026-01-26
+
+### Fixed
+
+- **修复 DoD 文件：恢复 detect-phase.sh 完整 DoD**
+  - 恢复 12 项 DoD（detect-phase.sh 功能验收项）
+  - 为每项添加正确的 Evidence 引用（使用反引号格式）
+  - 修复 release-check 失败问题
+
+## [10.8.1] - 2026-01-26
+
+### Changed
+
+- **文档更新：添加 Evidence 引用**
+  - 更新 .dod.md - 为每个 DoD 项添加 Evidence 引用
+  - 更新 .layer2-evidence.md - v10.8.0 证据（包含手动验证 + 自动化测试章节）
+  - 满足 Release PR (develop → main) 的 L3 要求
+
+## [10.8.0] - 2026-01-26
+
+### Fixed
+
+- **质量检查系统修复：添加 detect-phase.sh 脚本**
+  - 新增 `scripts/detect-phase.sh`（阶段检测脚本）
+  - Stop Hook 现在可以正确检测开发阶段（p0/p1/p2/pending/unknown）
+  - 修复 Stop Hook line 74 调用 detect-phase.sh 失败问题
+  - 新增 `docs/PHASE-DETECTION.md` 阶段检测文档
+
+### Added
+
+- **RCI 更新**
+  - W1-004: detect-phase.sh 存在性检查
+
 ## [10.7.0] - 2026-01-25
 
 ### Changed
