@@ -1,31 +1,70 @@
 # QA Decision
 
-Decision: NO_RCI
-Priority: P2
+Decision: UPDATE_RCI
+Priority: P0
 RepoType: Engine
 
+## Scope
+
+允许修改的范围：
+
+- scripts/qa/*
+- scripts/audit/*
+- templates/*
+- skills/qa/SKILL.md
+- skills/audit/SKILL.md
+- package.json
+- CHANGELOG.md
+- FEATURES.md
+- docs/QA-DECISION.md
+
+## Forbidden
+
+禁止修改的区域：
+
+- node_modules/*
+- .git/*
+- dist/*
+
 Tests:
-  - dod_item: "skills/dev/SKILL.md description 更新（删除 Stop Hook 提及）"
+  - dod_item: "scripts/qa/risk-score.js 实现并可运行"
     method: manual
-    location: manual:检查_description_无_stop_hook
-  - dod_item: "SKILL.md 使用警告章节更新（统一循环机制说明）"
+    location: manual:执行_risk-score_输出JSON
+  - dod_item: "scripts/qa/detect-scope.js 实现并可运行"
     method: manual
-    location: manual:检查_23-51_行_无_stop_hook
-  - dod_item: "SKILL.md 核心定位章节更新（删除 Stop Hook 说明）"
+    location: manual:执行_detect-scope_输出范围
+  - dod_item: "scripts/qa/detect-forbidden.js 实现并可运行"
     method: manual
-    location: manual:检查_55-76_行_无_stop_hook
-  - dod_item: "文档明确说明有头/无头两种循环方式"
+    location: manual:执行_detect-forbidden_输出禁区
+  - dod_item: "scripts/audit/compare-scope.js 实现并可运行"
     method: manual
-    location: manual:检查包含有头无头说明
-  - dod_item: "pr-gate 降级为提示型（exit 0 不阻断）"
+    location: manual:执行_compare-scope_对比结果
+  - dod_item: "scripts/audit/check-forbidden.js 实现并可运行"
     method: manual
-    location: manual:检查_pr-gate-v2_exit_0
-  - dod_item: "版本号更新（CHANGELOG, package.json, hook-core/VERSION）"
+    location: manual:执行_check-forbidden_检查结果
+  - dod_item: "scripts/audit/check-proof.js 实现并可运行"
     method: manual
-    location: manual:检查版本号更新
+    location: manual:执行_check-proof_验证结果
+  - dod_item: "scripts/audit/generate-report.js 实现并可运行"
+    method: manual
+    location: manual:执行_generate-report_生成报告
+  - dod_item: "templates/QA-DECISION.md 创建结构化模板"
+    method: manual
+    location: manual:检查模板格式
+  - dod_item: "templates/AUDIT-REPORT.md 创建结构化模板"
+    method: manual
+    location: manual:检查模板格式
+  - dod_item: "skills/qa/SKILL.md 更新为包含 RISK SCORE"
+    method: manual
+    location: manual:检查_RISK_SCORE_章节
+  - dod_item: "skills/audit/SKILL.md 更新为结构化验证"
+    method: manual
+    location: manual:检查_验证流程_章节
 
 RCI:
   new: []
-  update: []
+  update:
+    - Q1-001  # QA Decision Node RISK SCORE 机制
+    - Q2-001  # Audit Node 结构化验证
 
-Reason: 文档修复，删除过时的 Stop Hook 说明，统一为循环机制概念。pr-gate 降级为提示型（advisory），不改变功能逻辑，无需回归测试。
+Reason: 重构 QA/Audit 系统为三层架构，引入 RISK SCORE 触发机制，实现结构化合同验证。影响 /dev 流程的 Step 4 和 Step 7，需要更新相关 RCI。
