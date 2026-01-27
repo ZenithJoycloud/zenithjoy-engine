@@ -1179,6 +1179,7 @@ ci:
       type: file
       path: ".quality-evidence.*.json"
       contains: ["sha", "ci_run_id", "timestamp", "qa_gate_passed", "audit_decision"]
+      run: "bash ci/scripts/generate-evidence.sh"
     test: "ci/scripts/generate-evidence.sh"
 
   - id: C8-002
@@ -1198,6 +1199,7 @@ ci:
       type: ci_job
       name: "Evidence Gate"
       status: success
+      run: "bash ci/scripts/evidence-gate.sh"
     test: "ci/scripts/evidence-gate.sh"
 
   - id: C8-003
