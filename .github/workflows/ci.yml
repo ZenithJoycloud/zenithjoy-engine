@@ -146,6 +146,23 @@ jobs:
 
           npm run build --if-present       # 构建验证
 
+      # Evidence 生成（CI-only，SSOT）
+      - name: Generate Evidence
+        if: steps.detect.outputs.type == 'npm'
+        run: |
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "  Evidence 生成（CI-only）"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          bash ci/scripts/generate-evidence.sh
+
+      - name: Evidence Gate
+        if: steps.detect.outputs.type == 'npm'
+        run: |
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "  Evidence Gate 校验"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          bash ci/scripts/evidence-gate.sh
+
       # L2A: PRD/DoD/QA/Audit 远端检查
       # PRD/DoD Residue Check (develop/main only)
       - name: Check for PRD/DoD in develop/main
