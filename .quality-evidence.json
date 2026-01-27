@@ -1,9 +1,9 @@
 {
-  "sha": "4775142027c862676a444bb01281c783ff7e6106",
+  "sha": "ae24dbae7797dc378486433ec17afb6d2e2fb1a7",
   "branch": "cp-evidence-ci-ssot",
   "qa_gate_passed": true,
   "audit_decision": "PASS",
-  "timestamp": "2026-01-27T17:12:44+08:00",
+  "timestamp": "2026-01-27T17:20:51+08:00",
   "evidence": {
     "typecheck": "passed",
     "tests": "passed",
