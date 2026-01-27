@@ -11,8 +11,11 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { execSync } from "child_process";
 import * as path from "path";
+import * as fs from "fs";
 
 const DETECT_SCRIPT = path.join(__dirname, "../../scripts/devgate/detect-priority.cjs");
+const QA_DECISION = path.join(__dirname, "../../docs/QA-DECISION.md");
+const QA_DECISION_BACKUP = QA_DECISION + ".test-backup";
 
 function runDetect(env: Record<string, string> = {}): { priority: string; source: string } {
   const result = execSync(`node "${DETECT_SCRIPT}" --json`, {
@@ -23,6 +26,18 @@ function runDetect(env: Record<string, string> = {}): { priority: string; source
 }
 
 describe("detect-priority.cjs", () => {
+  // 临时移除 QA-DECISION.md 避免影响测试
+  beforeEach(() => {
+    if (fs.existsSync(QA_DECISION)) {
+      fs.renameSync(QA_DECISION, QA_DECISION_BACKUP);
+    }
+  });
+
+  afterEach(() => {
+    if (fs.existsSync(QA_DECISION_BACKUP)) {
+      fs.renameSync(QA_DECISION_BACKUP, QA_DECISION);
+    }
+  });
   describe("CRITICAL → P0 映射", () => {
     it("PR title 包含 CRITICAL 应返回 P0", () => {
       const result = runDetect({ PR_TITLE: "fix: CRITICAL 级安全修复" });
