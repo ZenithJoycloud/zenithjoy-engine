@@ -1,40 +1,64 @@
 # QA Decision
 
-Decision: NO_RCI
-Priority: P2
+Decision: UPDATE_RCI
+Priority: P1
 RepoType: Engine
 
 Tests:
-  - dod_item: "docs/RALPH-LOOP-INTERCEPTION.md 不再提及项目 Stop Hook"
+  - dod_item: "/dev 在 Step 7 自动启动 Ralph Loop"
     method: manual
-    location: manual:人工检查文档内容，确认无 Stop Hook 相关描述
+    location: manual:执行/dev观察日志中是否自动调用 Ralph Loop
 
-  - dod_item: "文档明确说明 Ralph Loop 自己实现循环机制"
+  - dod_item: "Ralph Loop max-iterations=20"
     method: manual
-    location: manual:人工检查文档内容，确认循环机制描述正确
+    location: manual:检查命令参数
 
-  - dod_item: "说明 AI 通过检查条件并输出 promise 来控制循环结束"
+  - dod_item: "p1 阶段自动启动 Ralph Loop"
     method: manual
-    location: manual:人工检查文档内容，确认 promise 机制描述正确
+    location: manual:触发CI失败观察行为
 
-  - dod_item: "skills/dev/SKILL.md 删除 Stop Hook 配合 相关章节"
+  - dod_item: "SHA 不匹配问题解决（一次性提交）"
     method: manual
-    location: manual:人工检查 SKILL.md，确认无 Stop Hook 配合章节
+    location: manual:完整流程CI通过
 
-  - dod_item: ".claude/settings.json 中 Stop Hook 被禁用或删除"
+  - dod_item: "版本号自动更新（feat/fix/feat!）"
     method: manual
-    location: manual:人工检查配置文件，确认 Stop Hook 已禁用
+    location: manual:检查package.json自动更新
 
-  - dod_item: "文档内容准确无误"
+  - dod_item: "CHANGELOG 自动更新"
     method: manual
-    location: manual:整体审查文档质量
+    location: manual:检查CHANGELOG新增条目
 
-  - dod_item: "不再包含错误的 Stop Hook 描述"
+  - dod_item: "hook-core/VERSION 自动更新"
     method: manual
-    location: manual:整体审查文档，确认无错误描述
+    location: manual:检查VERSION文件同步
+
+  - dod_item: "Registry 自动更新（改核心文件时）"
+    method: manual
+    location: manual:改hooks/确认registry更新
+
+  - dod_item: "派生视图自动生成"
+    method: manual
+    location: manual:确认docs/paths/更新
+
+  - dod_item: "DoD 格式自动修复"
+    method: manual
+    location: manual:故意错误格式确认修复
+
+  - dod_item: "CI SHA 检查支持单 commit"
+    method: manual
+    location: manual:CI通过验证
+
+  - dod_item: "端到端测试：/dev → Loop → PR → CI pass → merge"
+    method: manual
+    location: manual:完整流程测试
 
 RCI:
   new: []
-  update: []
+  update:
+    - W1-001  # 两阶段工作流 - Ralph Loop 成为自动化核心
+    - W1-002  # p0 质检循环
+    - W1-003  # p1 CI 修复循环
+    - W7-001  # 新增：Ralph Loop 自动化能力（待创建）
 
-Reason: 纯文档修正任务，不涉及功能变更或回归风险，无需纳入回归契约
+Reason: Ralph Loop 自动化是 /dev 工作流的核心改进，解决循环死锁和版本号遗忘问题，需要更新现有 W1 RCI 并新增 W7 RCI

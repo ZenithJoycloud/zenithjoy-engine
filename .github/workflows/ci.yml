@@ -387,7 +387,11 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.head.sha }}
-          fetch-depth: 2  # 需要父提交来验证证据 SHA
+          fetch-depth: 0  # 需要完整历史来计算 commit count
+
+      - name: Fetch base branch
+        run: |
+          git fetch origin ${{ github.base_ref }}:refs/remotes/origin/${{ github.base_ref }}
 
       - name: Verify Quality Evidence
         run: |
@@ -427,9 +431,10 @@ jobs:
 
           echo "✓ 必需字段齐全"
 
-          # 4. 验证 SHA 匹配 HEAD~1（防老文件冒用）⚠️ 关键
-          # 两阶段提交：commit 1 = 代码变更, commit 2 = 证据文件
-          # checkout 使用 PR head (非 merge commit)，所以 HEAD~1 就是父提交
+          # 4. 验证 SHA 匹配（防老文件冒用）⚠️ 关键
+          # 支持两种提交模式：
+          #   - 一次性提交：commit 1 = 代码+证据（检查 HEAD）
+          #   - 两阶段提交：commit 1 = 代码, commit 2 = 证据（检查 HEAD~1）
           #
           # Release 分支例外：release 分支使用强制合并策略，SHA 验证逻辑不适用
           BASE_BRANCH="${{ github.base_ref }}"
@@ -437,15 +442,27 @@ jobs:
           if [[ "$BASE_BRANCH" == "main" ]]; then
             echo "ℹ️  Release 分支：跳过 SHA 验证（强制合并场景）"
           else
-            PARENT_SHA=$(git rev-parse HEAD~1)
+            # 判断提交模式
+            COMMIT_COUNT=$(git rev-list --count HEAD ^origin/${{ github.base_ref }})
+
+            if [[ "$COMMIT_COUNT" -eq 1 ]]; then
+              # 单 commit：检查 HEAD（一次性提交模式）
+              EXPECTED_SHA=$(git rev-parse HEAD)
+              echo "ℹ️  单 commit 模式，检查 HEAD"
+            else
+              # 多 commit：检查 HEAD~1（两阶段提交模式）
+              EXPECTED_SHA=$(git rev-parse HEAD~1)
+              echo "ℹ️  多 commit 模式，检查 HEAD~1"
+            fi
+
             EVIDENCE_SHA=$(jq -r '.sha' "$EVIDENCE_FILE")
 
-            if [[ "$EVIDENCE_SHA" != "$PARENT_SHA" ]]; then
+            if [[ "$EVIDENCE_SHA" != "$EXPECTED_SHA" ]]; then
               echo "❌ SHA 不匹配！"
               echo "   证据 SHA: $EVIDENCE_SHA"
-              echo "   HEAD~1: $PARENT_SHA (期望)"
+              echo "   期望 SHA: $EXPECTED_SHA"
               echo ""
-              echo "证据文件应该引用代码变更的 commit (HEAD~1)"
+              echo "证据文件应该引用代码变更的 commit"
               exit 1
             fi
 
