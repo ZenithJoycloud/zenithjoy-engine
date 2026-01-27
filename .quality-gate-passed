@@ -1,8 +1,0 @@
-# Quality Gate Passed
-# Generated: 2026-01-27T17:20:51+08:00
-# Branch: cp-evidence-ci-ssot
-# Commit: ae24dba
-
-typecheck: PASS
-test: PASS
-build: PASS
