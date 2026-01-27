@@ -18,8 +18,8 @@
 
 # NOTE: version 需要与 package.json 保持同步
 # 更新 package.json 时同步更新此处
-version: "10.3.0"
-updated: "2026-01-25"
+version: "10.10.0"
+updated: "2026-01-27"
 
 # ============================================================================
 # Hooks 回归契约
@@ -854,6 +854,61 @@ workflow:
     evidence:
       type: log
       contains: "已移除 worktree"
+
+  # --------------------------------------------------------------------------
+  # W7: Ralph Loop 自动化
+  # --------------------------------------------------------------------------
+  - id: W7-001
+    feature: W7
+    name: "Ralph Loop 自动启动"
+    scope: workflow
+    priority: P1
+    trigger: [PR, Release]
+    method: manual
+    tags: [dev, ralph-loop, automation]
+    owner: workflow
+    steps:
+      given: "/dev 工作流执行到 Step 7 或 Step 9"
+      when: "AI 需要循环处理质检或 CI 修复"
+      then: "自动启动 Ralph Loop (max-iterations=20 for p0, 10 for p1)"
+    evidence:
+      type: log
+      description: "日志显示 /ralph-loop 命令被自动调用，包含 --max-iterations 和 --completion-promise 参数"
+
+  - id: W7-002
+    feature: W7
+    name: "一次性提交避免 SHA 死循环"
+    scope: workflow
+    priority: P1
+    trigger: [PR, Release]
+    method: manual
+    tags: [dev, commit, sha-check]
+    owner: workflow
+    steps:
+      given: "Step 7 质检完成，需要提交代码"
+      when: "执行自动化检查并提交"
+      then: "所有改动（代码+版本号+registry+视图+evidence）在一个 commit，evidence SHA 匹配 commit SHA"
+    evidence:
+      type: command
+      run: "git log --oneline -1"
+      description: "单个 commit 包含所有改动，CI SHA 检查通过"
+
+  - id: W7-003
+    feature: W7
+    name: "版本号自动更新"
+    scope: workflow
+    priority: P1
+    trigger: [PR, Release]
+    method: manual
+    tags: [dev, version, automation]
+    owner: workflow
+    steps:
+      given: "Step 7.4 自动化检查阶段"
+      when: "运行 scripts/auto-update-version.sh"
+      then: "根据第一个 commit 类型（feat/fix/feat!）自动更新 package.json、CHANGELOG.md、hook-core/VERSION"
+    evidence:
+      type: file-diff
+      description: "package.json 版本号已更新，CHANGELOG.md 有新条目，hook-core/VERSION 同步"
 
 # ============================================================================
 # CI/Release 回归契约

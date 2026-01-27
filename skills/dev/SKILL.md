@@ -303,8 +303,9 @@ AI 检查完成条件
 
 **启动命令**：
 ```bash
-/ralph-loop "实现 <功能描述>，完成质检并创建 PR 后输出 <promise>DONE</promise>" \
-    --completion-promise "DONE"
+/ralph-loop "实现 <功能描述>，完成质检并创建 PR 后输出 <promise>QUALITY_GATE_PASSED</promise>" \
+    --max-iterations 20 \
+    --completion-promise "QUALITY_GATE_PASSED"
 ```
 
 **循环机制**：
@@ -319,7 +320,7 @@ AI 检查完成条件：
     ├─ PR 已创建？
     ↓
 条件未满足 → 修复并继续下一轮
-条件全部满足 → 输出 <promise>DONE</promise> → 结束 ✅
+条件全部满足 → 输出 <promise>QUALITY_GATE_PASSED</promise> → 结束 ✅
 ```
 
 ### P1 阶段使用（CI 修复循环）
@@ -327,6 +328,7 @@ AI 检查完成条件：
 **启动命令**：
 ```bash
 /ralph-loop "修复 CI 失败，CI 通过并合并后输出 <promise>CI_PASSED</promise>" \
+    --max-iterations 10 \
     --completion-promise "CI_PASSED"
 ```
 
@@ -353,9 +355,9 @@ Case CI_STATUS:
 
 | 场景 | 命令 | Promise 标记 |
 |------|------|-------------|
-| 新功能开发 | `/ralph-loop "实现功能X，完成质检并创建 PR" --completion-promise "DONE"` | `<promise>DONE</promise>` |
-| CI 修复 | `/ralph-loop "修复CI，CI 通过并合并" --completion-promise "CI_PASSED"` | `<promise>CI_PASSED</promise>` |
-| Bug 修复 | `/ralph-loop "修复Bug#123" --completion-promise "FIXED"` | `<promise>FIXED</promise>` |
+| 新功能开发 | `/ralph-loop "实现功能X，完成质检并创建 PR" --max-iterations 20 --completion-promise "QUALITY_GATE_PASSED"` | `<promise>QUALITY_GATE_PASSED</promise>` |
+| CI 修复 | `/ralph-loop "修复CI，CI 通过并合并" --max-iterations 10 --completion-promise "CI_PASSED"` | `<promise>CI_PASSED</promise>` |
+| Bug 修复 | `/ralph-loop "修复Bug#123" --max-iterations 10 --completion-promise "FIXED"` | `<promise>FIXED</promise>` |
 
 ---
 
