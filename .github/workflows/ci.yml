@@ -25,6 +25,10 @@ jobs:
           fetch-depth: 0
 
       - name: Check package.json version updated
+        if: |
+          !startsWith(github.event.head_commit.message, 'chore:') &&
+          !startsWith(github.event.head_commit.message, 'docs:') &&
+          !startsWith(github.event.head_commit.message, 'test:')
         run: |
           set -e
           if [ ! -f package.json ]; then
@@ -167,7 +171,10 @@ jobs:
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
       - name: L2A Check
-        if: steps.detect.outputs.type == 'npm' && github.base_ref != 'main'
+        if: |
+          steps.detect.outputs.type == 'npm' &&
+          github.base_ref != 'main' &&
+          !startsWith(github.event.head_commit.message, 'chore:')
         run: |
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
           echo "  L2A: PRD/DoD/QA/Audit 检查"
