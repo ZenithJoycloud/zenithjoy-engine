@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [10.13.0] - 2026-01-27
+
+### Changed
+
+- **修复 /dev Skill v2.2（删除阶段 + 强制 Task Checkpoint）**
+  - 删除 p0/p1/p2 阶段检测逻辑
+  - 删除 detect-phase.sh 调用
+  - 统一完成条件：PR 创建 + CI 通过 + PR 合并 = DONE
+  - 新增官方 Task Checkpoint 使用规范（TaskCreate/TaskUpdate）
+  - 执行流程图改为单一流程（不分阶段）
+  - 核心规则更新为统一流程
+  - skills/dev/SKILL.md 版本升级到 2.2.0
+  - 更新 RCI: W7-001, W7-003
+
 ## [10.12.0] - 2026-01-27
 
 ### Changed

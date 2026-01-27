@@ -1,6 +1,6 @@
 ---
 name: dev
-version: 2.1.0
+version: 2.2.0
 updated: 2026-01-27
 description: |
   统一开发工作流入口（必须在 Ralph Loop 内调用）。
@@ -12,13 +12,13 @@ description: |
   - 或手动: /ralph-loop "/dev .prd.md" --completion-promise "DONE"
   - Hook 输出 [SKILL_REQUIRED: dev]
 
-  v2.1.0 变更：
-  - Ralph Loop 改为用户调用（不再由 AI 内部调用）
-  - 简化 /dev 职责：只负责流程编排
-  - 删除内部 Ralph Loop 调用逻辑
+  v2.2.0 变更：
+  - 删除阶段检测（不再分 p0/p1/p2）
+  - 统一完成条件：PR 创建 + CI 通过 + PR 合并 = DONE
+  - 强制使用官方 Task checkpoint 追踪进度
 ---
 
-# /dev - 统一开发工作流（v2.1）
+# /dev - 统一开发工作流（v2.2）
 
 ## ⚠️  使用警告（CRITICAL）
 
@@ -55,10 +55,10 @@ dev-with-loop .prd-xxx.md
 ## 核心定位
 
 **流程编排者**（不负责循环重试）：
-- 阶段检测 → `scripts/detect-phase.sh`
 - 质检强制 → `hooks/stop.sh` (Stop Hook)
 - 放行判断 → `hooks/pr-gate-v2.sh` (PreToolUse:Bash)
 - 循环驱动 → Ralph Loop（外部调用）
+- 进度追踪 → Task Checkpoint（TaskCreate/TaskUpdate）
 
 判断由专门的规范负责：
 - 测试决策 → 参考 `skills/qa/SKILL.md`
@@ -70,41 +70,25 @@ dev-with-loop .prd-xxx.md
          ↓
        /dev（流程编排）
          ↓
-       Step 1-8（具体步骤）
+       Step 1-11（具体步骤）
+         ↓
+       Task Checkpoint（进度追踪）
 ```
 
 ---
 
-## Ralph Loop 完成条件检查（AI 职责）
+## 统一完成条件（AI 职责）
 
 **AI 在每次 Ralph Loop 迭代结束时，必须检查完成条件并决定是否输出 promise。**
 
-### p0 阶段完成条件
+### 唯一完成条件
 
 ```
-1. Audit 报告存在？(docs/AUDIT-REPORT.md)
-   ❌ → 调用 /audit → 不输出 promise → 继续
-
-2. Audit Decision: PASS？
-   ❌ → 修复 L1/L2 问题 → 不输出 promise → 继续
-
-3. .quality-gate-passed 存在且有效？
-   ❌ → 运行 npm run qa:gate → 不输出 promise → 继续
-
-4. PR 已创建？
-   ❌ → 创建 PR (gh pr create) → 不输出 promise → 继续
-
-✅ 全部满足 → 输出 <promise>DONE</promise> → Ralph Loop 结束
-```
-
-### p1 阶段完成条件
-
-```
-1. 质检仍然有效？（代码修改后需要重新质检）
-   ❌ → 运行 npm run qa:gate → 不输出 promise → 继续
+1. PR 已创建？
+   ❌ → 继续执行到创建 PR → 不输出 promise → 继续
 
 2. CI 状态？
-   - PENDING/QUEUED/IN_PROGRESS → 不输出 promise → Ralph Loop 继续（轮询）
+   - PENDING/QUEUED/IN_PROGRESS → 等待 → 不输出 promise → 继续
    - FAILURE → 分析失败 → 修复代码 → push → 不输出 promise → 继续
    - SUCCESS → 继续下一步
 
@@ -113,6 +97,11 @@ dev-with-loop .prd-xxx.md
 
 ✅ 全部满足 → 输出 <promise>DONE</promise> → Ralph Loop 结束
 ```
+
+**不再分阶段**：
+- ❌ 不再有 p0/p1/p2 阶段
+- ❌ 不再运行 detect-phase.sh
+- ✅ 从头到尾一直执行，直到 PR 合并
 
 ---
 
@@ -143,9 +132,7 @@ Step N 完成 → 立即读取 skills/dev/steps/{N+1}-xxx.md → 立即执行下
 
 ### Ralph Loop 结束条件
 
-- p0 阶段：检查所有条件 → 全部满足 → 输出 `<promise>DONE</promise>`
-- p1 阶段：检查所有条件 → 全部满足 → 输出 `<promise>DONE</promise>`
-- p2/pending/unknown 阶段：不启动 Ralph Loop，直接退出
+统一完成条件：检查所有条件 → 全部满足 → 输出 `<promise>DONE</promise>`
 
 ### 特别注意：Skill 调用后必须继续
 
@@ -156,157 +143,78 @@ Step N 完成 → 立即读取 skills/dev/steps/{N+1}-xxx.md → 立即执行下
 
 ---
 
-## 入口：阶段检测（两阶段）
+## Task Checkpoint 追踪（CRITICAL）
 
-**进入 /dev 后，首先运行阶段检测**：
+**必须使用官方 Task 工具追踪进度**，让用户实时看到执行状态。
 
-```bash
-# 运行阶段检测
-bash scripts/detect-phase.sh
+### 任务创建（开始时）
 
-# 输出格式
-# PHASE: p0 / p1 / p2 / pending / unknown
-# DESCRIPTION: ...
-# ACTION: ...
+在 /dev 开始时，创建所有步骤的 Task：
+
+```javascript
+TaskCreate({ subject: "PRD 确认", description: "确认 PRD 文件存在且有效", activeForm: "确认 PRD" })
+TaskCreate({ subject: "环境检测", description: "检测项目环境和配置", activeForm: "检测环境" })
+TaskCreate({ subject: "分支创建", description: "创建或切换到功能分支", activeForm: "创建分支" })
+TaskCreate({ subject: "DoD 定稿", description: "生成 DoD 并调用 QA 决策", activeForm: "定稿 DoD" })
+TaskCreate({ subject: "写代码", description: "根据 PRD 实现功能", activeForm: "写代码" })
+TaskCreate({ subject: "写测试", description: "为功能编写测试", activeForm: "写测试" })
+TaskCreate({ subject: "质检", description: "代码审计 + 自动化测试", activeForm: "质检中" })
+TaskCreate({ subject: "提交 PR", description: "版本号更新 + 创建 PR", activeForm: "提交 PR" })
+TaskCreate({ subject: "CI 监控", description: "等待 CI 通过并修复失败", activeForm: "监控 CI" })
+TaskCreate({ subject: "Learning 记录", description: "记录开发经验", activeForm: "记录经验" })
+TaskCreate({ subject: "清理", description: "清理临时文件", activeForm: "清理中" })
 ```
 
-### 阶段定义
+### 任务更新（执行中）
 
-| 阶段 | 条件 | 目标 | 策略 |
-|------|------|------|------|
-| **p0** | 无 PR | 发 PR | 质检循环 → 创建 PR → 结束（不等 CI）|
-| **p1** | PR + CI fail | 修到 CI 绿 | 轮询循环：检查 CI → 失败则修复并继续 → 成功则合并 |
-| **p2** | PR + CI pass | 不介入 | 直接退出（GitHub 自动 merge）|
-| **pending** | PR + CI pending | - | 直接退出（稍后再查）|
-| **unknown** | gh API 错误 | - | 直接退出（不误判）|
+```javascript
+// 开始某个步骤时
+TaskUpdate({ taskId: "1", status: "in_progress" })
 
-**详细文档**: `docs/PHASE-DETECTION.md`
+// 完成某个步骤时
+TaskUpdate({ taskId: "1", status: "completed" })
 
----
-
-## 流程节点（两阶段分离）
-
-### p0 阶段：Published（发 PR 之前）
-
-```
-┌─────────────────────────────────────────────────────────┐
-│                 p0: Published 阶段                       │
-├─────────────────────────────────────────────────────────┤
-│                                                         │
-│  阶段检测 (scripts/detect-phase.sh)                     │
-│      → PHASE: p0                                        │
-│      ↓                                                  │
-│  PRD 确定 (01-prd.md)                                   │
-│      ↓                                                  │
-│  环境检测 (02-detect.md)                                │
-│      ↓                                                  │
-│  分支创建 (03-branch.md)                                │
-│      ↓                                                  │
-│  DoD 定稿 (04-dod.md)                                   │
-│      │   含 QA Decision Node                            │
-│      │   产物: docs/QA-DECISION.md                      │
-│      ↓                                                  │
-│  写代码 + 写测试 (05-code.md, 06-test.md)               │
-│      ↓                                                  │
-│  质检循环 (07-quality.md) ← Stop Hook 强制              │
-│      │   L2A: Audit (Decision: PASS)                    │
-│      │   L1: npm run qa:gate                            │
-│      │   失败 → 修复 → 重试（质检循环）                 │
-│      ↓                                                  │
-│  提交 PR (08-pr.md)                                     │
-│      ↓                                                  │
-│  检查 p0 完成条件                                        │
-│      ├─ 全部满足 → 输出 <promise>QUALITY_GATE_PASSED</promise> │
-│      └─ Ralph Loop 结束 ✅                              │
-│                                                         │
-└─────────────────────────────────────────────────────────┘
+// 如果失败需要重试
+// 不要 delete，保留状态为 in_progress，继续重试
 ```
 
-### p1 阶段：CI fail 修复（轮询循环）
+### 查看进度
 
-```
-┌─────────────────────────────────────────────────────────┐
-│            p1: CI fail 修复（轮询循环）                  │
-├─────────────────────────────────────────────────────────┤
-│                                                         │
-│  阶段检测 (scripts/detect-phase.sh)                     │
-│      → PHASE: p1                                        │
-│      ↓                                                  │
-│  Ralph Loop 循环检查 (09-ci.md)                         │
-│      │                                                  │
-│      │   检查 p1 完成条件：                             │
-│      │   1. 质检有效？                                  │
-│      │   2. CI 状态？(pending→等待/fail→修复/success→下一步) │
-│      │   3. PR 已合并？                                 │
-│      │                                                  │
-│      │   条件未满足 → 不输出 promise → Ralph Loop 继续  │
-│      │   全部满足 → 输出 <promise>CI_PASSED</promise>   │
-│      └─ Ralph Loop 结束 ✅                              │
-│                                                         │
-└─────────────────────────────────────────────────────────┘
-```
+```javascript
+// AI 可以随时查看当前进度
+TaskList()
 
-### p2 阶段：CI pass（已完成）
-
-```
-┌─────────────────────────────────────────────────────────┐
-│                    p2: CI pass                          │
-├─────────────────────────────────────────────────────────┤
-│  阶段检测 → PHASE: p2                                   │
-│  任务已完成，直接退出 ✅                                 │
-└─────────────────────────────────────────────────────────┘
-```
-
-### pending 阶段：等待 CI 结果
-
-```
-┌─────────────────────────────────────────────────────────┐
-│              pending: 等待 CI 结果                       │
-├─────────────────────────────────────────────────────────┤
-│                                                         │
-│  阶段检测 (scripts/detect-phase.sh)                     │
-│      → PHASE: pending                                   │
-│      ↓                                                  │
-│  Ralph Loop 等待 CI 完成                                 │
-│      │                                                  │
-│      │   检查 CI 状态：                                 │
-│      │   - pending/queued → 不输出 promise → 继续等待   │
-│      │   - failure → 转入 p1 修复                       │
-│      │   - success → 转入 p2 完成                       │
-│      ↓                                                  │
-│  根据 CI 结果转入对应阶段                                │
-│                                                         │
-└─────────────────────────────────────────────────────────┘
-```
-
-### unknown：API 错误
-
-```
-┌─────────────────────────────────────────────────────────┐
-│                    unknown                              │
-├─────────────────────────────────────────────────────────┤
-│  unknown: gh API 错误 → 直接退出（不误判）              │
-└─────────────────────────────────────────────────────────┘
+// 输出示例：
+// ✅ 1. PRD 确认 (completed)
+// ✅ 2. 环境检测 (completed)
+// ✅ 3. 分支创建 (completed)
+// 🚧 4. DoD 定稿 (in_progress)
+// ⏸️  5. 写代码 (pending)
+// ...
 ```
 
 ---
 
-## 核心规则（v2.0）
+## 核心规则
 
-### 1. 两阶段分离 + Ralph Loop ✅
-
-```
-p0: 发 PR → Ralph Loop 检查条件 → 输出 promise → 结束
-p1: Ralph Loop 循环 → 修复 CI → 合并 PR → 输出 promise → 结束
-p2: 任务已完成，直接退出
-```
-
-### 2. Stop Hook 配合 Ralph Loop ✅
+### 1. 统一流程（不分阶段）✅
 
 ```
-p0: 条件未满足 → 不输出 promise → Ralph Loop 继续
-p1: CI fail/pending → 不输出 promise → Ralph Loop 继续
-    CI success + 合并完成 → 输出 promise → Ralph Loop 结束
+开始 → Step 1-11 → PR 创建 → CI 监控 → PR 合并 → DONE
+```
+
+**不再有**：
+- ❌ p0/p1/p2 阶段
+- ❌ detect-phase.sh 阶段检测
+- ❌ "发 PR 后就结束" 的错误逻辑
+
+### 2. Task Checkpoint 追踪 ✅
+
+```
+每个步骤：
+  开始 → TaskUpdate(N, in_progress)
+  完成 → TaskUpdate(N, completed)
+  失败重试 → 保持 in_progress，继续执行
 ```
 
 ### 3. 分支策略
