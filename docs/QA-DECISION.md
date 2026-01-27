@@ -1,6 +1,6 @@
 # QA Decision
 
-Decision: UPDATE_RCI
+Decision: PASS
 Priority: P2
 RepoType: Engine
 
