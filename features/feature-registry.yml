@@ -164,8 +164,8 @@ platform_features:
     name: Unified Dev Workflow
     status: Committed
     priority: P0
-    version: "10.13.0"
-    updated: "2026-01-27"
+    version: "10.13.1"
+    updated: "2026-01-28"
     description: |
       v2.2.0 统一开发工作流（删除阶段检测 + 强制 Task Checkpoint）：
       - 统一完成条件：PR 创建 + CI 通过 + PR 合并 = DONE
@@ -173,6 +173,7 @@ platform_features:
       - 从头到尾一直执行，不在 PR 创建后停止
       - Ralph Loop: 用户直接调用（dev-with-loop），循环执行到合并
       - 删除 detect-phase.sh：不再有 p0/p1/p2 阶段检测
+      - v10.13.1: 修复 Skill 调用返回后行为的矛盾描述（澄清 Ralph Loop 作用，删除"立即返回"误导）
       - v10.13.0: /dev Skill v2.2.0（删除阶段检测，统一完成条件，强制 Task Checkpoint）
       - v10.12.0: Ralph Loop Wrapper 修复（用户直接调用，dev-with-loop 命令，skills/dev v2.1.0）
       - v10.10.0: Ralph Loop 自动化（Step 7/9 自动启动，max-iterations=20，解决 SHA 死循环）
