@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # ZenithJoy Engine - Cleanup 脚本
+# v1.6: 跨仓库兼容（develop/main fallback）+ worktree 安全检查
 # v1.5: 支持分支级别状态文件 (.cecelia-run-id-{branch}, .quality-gate-passed-{branch})
 # v1.4: 支持分支级别 PRD/DoD 文件 (.prd-{branch}.md, .dod-{branch}.md)
 # v1.3: 使用 mktemp 替代硬编码 /tmp，修复 MERGE_HEAD 路径
@@ -29,8 +30,19 @@ NC='\033[0m' # No Color
 
 # 参数
 CP_BRANCH="${1:-}"
-# v1.1: 优先使用参数，其次从 git config 读取，最后 fallback 到 develop
-BASE_BRANCH="${2:-$(git config "branch.$CP_BRANCH.base-branch" 2>/dev/null || echo "develop")}"
+# v1.6: 优先使用参数，其次从 git config 读取，最后 fallback 到 develop/main
+BASE_BRANCH="${2:-$(git config "branch.$CP_BRANCH.base-branch" 2>/dev/null || echo "")}"
+
+# v1.6: 自动检测 base 分支（develop 优先，fallback 到 main）
+if [[ -z "$BASE_BRANCH" ]] || ! git rev-parse "$BASE_BRANCH" >/dev/null 2>&1; then
+    if git rev-parse develop >/dev/null 2>&1; then
+        BASE_BRANCH="develop"
+    elif git rev-parse main >/dev/null 2>&1; then
+        BASE_BRANCH="main"
+    else
+        BASE_BRANCH="HEAD~10"  # 最后的 fallback
+    fi
+fi
 
 if [[ -z "$CP_BRANCH" ]]; then
     echo -e "${RED}错误: 请提供 cp-* 分支名${NC}"

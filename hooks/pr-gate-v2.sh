@@ -149,8 +149,9 @@ if [[ -n "$TARGET_REPO" ]]; then
     REPO_NAME="${FULL_REPO##*/}"
 
     # 在常见位置搜索仓库
+    # v4.4: 使用 -e 检查 .git（兼容 worktree，.git 可能是文件）
     for SEARCH_PATH in "$HOME/dev" "$HOME/projects" "$HOME/code" "$HOME"; do
-        if [[ -d "$SEARCH_PATH/$REPO_NAME/.git" ]]; then
+        if [[ -e "$SEARCH_PATH/$REPO_NAME/.git" ]]; then
             PROJECT_ROOT="$SEARCH_PATH/$REPO_NAME"
             break
         fi
@@ -212,7 +213,17 @@ if [[ -z "$CURRENT_BRANCH" ]]; then
 fi
 
 # 读取配置的 base 分支（用于 PRD/DoD 检查）
-BASE_BRANCH=$(git config "branch.$CURRENT_BRANCH.base-branch" 2>/dev/null || echo "develop")
+# v4.4: 自动检测 base 分支（develop 优先，fallback 到 main）
+BASE_BRANCH=$(git config "branch.$CURRENT_BRANCH.base-branch" 2>/dev/null || echo "")
+if [[ -z "$BASE_BRANCH" ]] || ! git rev-parse "$BASE_BRANCH" >/dev/null 2>&1; then
+    if git rev-parse develop >/dev/null 2>&1; then
+        BASE_BRANCH="develop"
+    elif git rev-parse main >/dev/null 2>&1; then
+        BASE_BRANCH="main"
+    else
+        BASE_BRANCH="HEAD~10"
+    fi
+fi
 
 echo "" >&2
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" >&2
