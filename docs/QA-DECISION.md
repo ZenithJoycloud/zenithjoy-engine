@@ -1,28 +1,32 @@
 # QA Decision
 
-Decision: PASS
+Decision: NO_RCI
 Priority: P2
 RepoType: Engine
 
 Tests:
-  - dod_item: "hooks/branch-protect.sh 支持新格式"
-    method: auto
-    location: tests/hooks/branch-protect.test.ts
-
-  - dod_item: "hooks/pr-gate-v2.sh 支持新格式"
-    method: auto
-    location: tests/hooks/pr-gate-phase1.test.ts
-
-  - dod_item: "cleanup.sh 支持新格式"
+  - dod_item: "移除硬编码路径"
     method: manual
-    location: manual:验证清理脚本正确删除分支级文件
+    location: manual:code-review
 
-  - dod_item: ".gitignore 忽略新格式"
+  - dod_item: ".git 目录检测兼容 worktree"
     method: manual
-    location: manual:验证 git status 不显示 .prd-*.md 和 .dod-*.md
+    location: manual:worktree-test
+
+  - dod_item: "项目根目录检测兼容 worktree"
+    method: manual
+    location: manual:worktree-test
+
+  - dod_item: "develop 分支存在性检查"
+    method: manual
+    location: manual:code-review
+
+  - dod_item: "cleanup.sh worktree 安全检查"
+    method: manual
+    location: manual:worktree-test
 
 RCI:
   new: []
   update: []
 
-Reason: 这是 Hook 脚本和工作流改进，现有测试覆盖了核心逻辑，新格式是向后兼容的扩展
+Reason: 跨仓库和 Worktree 兼容性修复，不改变核心功能行为，只是增强环境适应性。
