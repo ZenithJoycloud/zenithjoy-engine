@@ -1,8 +1,8 @@
 # Audit Report
 
-Branch: cp-branch-scoped-prd-dod
+Branch: cp-sync-main-to-develop
 Date: 2026-01-28
-Scope: hooks/branch-protect.sh, hooks/pr-gate-v2.sh, skills/dev/scripts/cleanup.sh, .gitignore
+Scope: Merge main into develop for Release v11.2.3
 Target Level: L2
 
 Summary:
@@ -18,8 +18,7 @@ Findings: []
 Blockers: []
 
 Notes:
-  - 修改 Hook 脚本支持分支级别 PRD/DoD 文件命名
-  - 向后兼容：优先使用新格式 .prd-{branch}.md，fallback 到旧格式 .prd.md
-  - 更新 cleanup.sh 清理分支对应的 PRD/DoD 文件
-  - 更新 .gitignore 忽略所有 .prd-*.md 和 .dod-*.md 文件
-  - 所有现有测试通过（180 passed）
+  - 合并 main 到 develop 解决 PR #329 冲突
+  - 保留 develop 的 v11.2.x 版本号和功能
+  - 包含分支级别 PRD/DoD 文件命名功能 (v11.2.0)
+  - 包含 CI 修复 (v11.2.1, v11.2.2, v11.2.3)
