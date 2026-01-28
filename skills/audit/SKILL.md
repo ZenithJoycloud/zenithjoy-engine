@@ -124,6 +124,112 @@ description: |
 
 ---
 
+## 结构化验证流程（v11.0.0+）
+
+**使用自动化脚本进行合同验证**
+
+### Step 1: Scope 验证
+
+```bash
+# 对比实际改动与 QA-DECISION.md 中允许的 Scope
+node scripts/audit/compare-scope.cjs --base develop --head HEAD
+
+# 输出：
+{
+  "scopeCheck": {
+    "allowed": ["scripts/*", "skills/*"],
+    "changed": ["scripts/qa/risk-score.js", ...],
+    "extraChanges": [],    # 超出范围的改动
+    "pass": true
+  },
+  "forbiddenCheck": {
+    "forbidden": ["node_modules/*", ".git/*"],
+    "forbiddenTouched": [],    # 触碰的禁区
+    "pass": true
+  },
+  "overallPass": true
+}
+```
+
+### Step 2: Forbidden 检查
+
+```bash
+# 检查是否触碰禁止修改的区域
+node scripts/audit/check-forbidden.cjs --base develop --head HEAD
+
+# 输出：
+{
+  "pass": true,
+  "forbiddenTouched": [],
+  "details": "No forbidden areas touched"
+}
+```
+
+### Step 3: Proof 验证
+
+```bash
+# 验证 Tests 字段对应的测试是否完成
+node scripts/audit/check-proof.cjs --qa-decision docs/QA-DECISION.md
+
+# 输出：
+{
+  "pass": true,
+  "totalTests": 5,
+  "passedTests": 5,
+  "failedTests": [],
+  "details": "All tests verified"
+}
+```
+
+### Step 4: 生成报告
+
+```bash
+# 聚合所有审计结果，生成 AUDIT-REPORT.md
+node scripts/audit/generate-report.cjs --base develop --head HEAD --output docs/AUDIT-REPORT.md
+
+# 输出：
+{
+  "success": true,
+  "outputPath": "docs/AUDIT-REPORT.md",
+  "decision": "PASS"
+}
+```
+
+### 集成到 /dev 工作流
+
+在 Step 6（Audit Node）中自动调用：
+
+```bash
+# 1. Scope 验证
+node scripts/audit/compare-scope.cjs || exit 1
+
+# 2. Forbidden 检查
+node scripts/audit/check-forbidden.cjs || exit 1
+
+# 3. Proof 验证
+node scripts/audit/check-proof.cjs || exit 1
+
+# 4. 生成报告
+node scripts/audit/generate-report.cjs || exit 1
+
+# 5. 检查 Decision
+if grep -q "Decision: PASS" docs/AUDIT-REPORT.md; then
+  echo "✅ Audit passed"
+else
+  echo "❌ Audit failed, check AUDIT-REPORT.md"
+  exit 1
+fi
+```
+
+### 相关脚本
+
+- `scripts/audit/compare-scope.cjs` - Scope 对比
+- `scripts/audit/check-forbidden.cjs` - Forbidden 检查
+- `scripts/audit/check-proof.cjs` - Proof 验证
+- `scripts/audit/generate-report.cjs` - 报告生成
+
+---
+
 ## 问题分类示例
 
 ### L1 阻塞性（必须修）

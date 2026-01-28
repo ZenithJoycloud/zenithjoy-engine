@@ -7,6 +7,68 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [11.0.0] - 2026-01-27
+
+### Added
+
+- **RISK SCORE 自动触发机制**
+  - 新增 R1-R8 规则（Public API, Data Model, Cross-Module, Dependencies, Security, Core Workflow, Default Behavior, Financial）
+  - 每个规则 1 分，≥3 分自动触发 QA Decision Node
+  - 新增脚本：`scripts/qa/risk-score.js`、`scripts/qa/detect-scope.js`、`scripts/qa/detect-forbidden.js`
+  - 集成到 /dev 工作流 Step 3
+
+- **三层架构（Skills + Scripts + Templates）**
+  - Layer 1: Skills (SKILL.md) - AI 操作手册
+  - Layer 2: Scripts (*.js) - 可执行工具，实际计算/扫描
+  - Layer 3: Templates (*.md) - 结构化输出格式
+  - 明确分层职责，避免混淆
+
+- **结构化 Audit 验证流程**
+  - 新增脚本：`scripts/audit/compare-scope.js`、`scripts/audit/check-forbidden.js`、`scripts/audit/check-proof.js`、`scripts/audit/generate-report.js`
+  - Scope 验证：对比实际改动与 QA-DECISION.md 允许范围
+  - Forbidden 检查：确保未触碰禁区
+  - Proof 验证：检查测试证据完成度
+  - 自动生成结构化 AUDIT-REPORT.md
+
+- **标准化模板**
+  - `templates/QA-DECISION.md` - QA 合同模板
+  - `templates/AUDIT-REPORT.md` - 审计报告模板
+  - 固定 Schema，便于自动化解析和 Gate 检查
+
+### Changed
+
+- **skills/qa/SKILL.md v1.3.0**
+  - 新增 RISK SCORE 自动触发机制章节
+  - 添加 R1-R8 规则定义表格
+  - 说明 /dev 流程集成方式
+  - 相关脚本路径引用
+
+- **skills/audit/SKILL.md v1.3.0**
+  - 新增结构化验证流程章节
+  - 添加四步验证流程（Scope → Forbidden → Proof → Report）
+  - 集成到 /dev 工作流的示例代码
+  - 相关脚本路径引用
+
+### Breaking Changes
+
+- QA Decision Node 不再由人工判断，改为 RISK SCORE >= 3 自动触发
+- Audit Node 必须使用结构化脚本验证，不再接受纯 AI 审计
+- docs/QA-DECISION.md 和 docs/AUDIT-REPORT.md 格式标准化，Gate 依赖固定 Schema
+
+### Rationale
+
+此次重构将 QA/Audit 系统从"AI 判断"升级为"合同验证"：
+- QA Decision Node = 变更合同（BEFORE coding）
+- Audit Node = 合同验收（AFTER coding）
+- CI = 证据执行（evidence provider）
+
+三层架构确保：
+1. AI 有清晰的操作手册（SKILL.md）
+2. 验证逻辑可追溯、可测试（scripts/）
+3. 输出格式标准化（templates/）
+
+RISK SCORE 机制实现自动化触发，避免人为主观判断。
+
 ## [10.13.1] - 2026-01-27
 
 ### Changed
