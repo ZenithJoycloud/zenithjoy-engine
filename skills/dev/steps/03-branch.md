@@ -40,6 +40,47 @@ fi
 
 ---
 
+## Worktree 强制检查（CRITICAL）
+
+**在主仓库创建分支前，必须检查是否有活跃的 /dev 任务**：
+
+```bash
+# 只在主仓库（非 worktree）时检查
+if [[ "$IS_WORKTREE" == "false" ]]; then
+    PROJECT_ROOT=$(git rev-parse --show-toplevel)
+    DEV_MODE_FILE="$PROJECT_ROOT/.dev-mode"
+
+    if [[ -f "$DEV_MODE_FILE" ]]; then
+        ACTIVE_BRANCH=$(grep "^branch:" "$DEV_MODE_FILE" 2>/dev/null | cut -d' ' -f2 || echo "unknown")
+
+        echo ""
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo "  ⛔ 主仓库有活跃 /dev 任务"
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo ""
+        echo "  活跃分支: $ACTIVE_BRANCH"
+        echo ""
+        echo "  必须使用 worktree 并行开发："
+        echo ""
+        echo "    bash skills/dev/scripts/worktree-manage.sh create <feature-name>"
+        echo ""
+        echo "  或者先完成当前任务再开始新任务。"
+        echo ""
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+        # 阻止继续，必须用 worktree
+        exit 1
+    fi
+fi
+```
+
+**逻辑**：
+- 在 worktree 中 → 跳过检查（已隔离）
+- 在主仓库且有 `.dev-mode` → **阻止创建分支**，必须用 worktree
+- 在主仓库且无 `.dev-mode` → 继续创建分支
+
+---
+
 ## 创建功能分支
 
 ```bash
@@ -63,6 +104,90 @@ git config branch.$BRANCH_NAME.base-branch "$BASE_BRANCH"
 
 echo "✅ 分支已创建: $BRANCH_NAME"
 echo "   Base: $BASE_BRANCH"
+```
+
+---
+
+## 创建 .dev-mode 文件（CRITICAL）
+
+**分支创建后，必须创建 .dev-mode 文件**，这是 Stop Hook 循环控制的信号：
+
+```bash
+# 在项目根目录创建 .dev-mode（分支已创建，分支名正确）
+cat > .dev-mode << EOF
+dev
+branch: $BRANCH_NAME
+prd: .prd.md
+started: $(date -Iseconds)
+EOF
+
+echo "✅ .dev-mode 已创建（Stop Hook 循环控制已启用）"
+```
+
+**文件格式**：
+```
+dev
+branch: H7-remove-ralph-loop
+prd: .prd.md
+started: 2026-01-29T10:00:00+00:00
+```
+
+**生命周期**：
+- Step 3 分支创建后创建（此时分支名正确）
+- Step 11 (Cleanup) 删除
+- 或 PR 合并后由 Stop Hook 自动删除
+
+---
+
+## 创建 Task Checkpoint（CRITICAL）
+
+**分支和 .dev-mode 创建后，必须创建所有 11 个 Task**，让用户看到进度：
+
+```javascript
+// 使用官方 Task 工具创建所有步骤
+TaskCreate({ subject: "PRD 确认", description: "确认 PRD 文件存在且有效", activeForm: "确认 PRD" })
+TaskCreate({ subject: "环境检测", description: "检测项目环境和配置", activeForm: "检测环境" })
+TaskCreate({ subject: "分支创建", description: "创建或切换到功能分支", activeForm: "创建分支" })
+TaskCreate({ subject: "DoD 定稿", description: "生成 DoD 并调用 QA 决策", activeForm: "定稿 DoD" })
+TaskCreate({ subject: "写代码", description: "根据 PRD 实现功能", activeForm: "写代码" })
+TaskCreate({ subject: "写测试", description: "为功能编写测试", activeForm: "写测试" })
+TaskCreate({ subject: "质检", description: "代码审计 + 自动化测试", activeForm: "质检中" })
+TaskCreate({ subject: "提交 PR", description: "版本号更新 + 创建 PR", activeForm: "提交 PR" })
+TaskCreate({ subject: "CI 监控", description: "等待 CI 通过并修复失败", activeForm: "监控 CI" })
+TaskCreate({ subject: "Learning 记录", description: "记录开发经验", activeForm: "记录经验" })
+TaskCreate({ subject: "清理", description: "清理临时文件", activeForm: "清理中" })
+```
+
+**创建后更新 .dev-mode**：
+
+```bash
+# 添加 tasks_created 标记
+echo "tasks_created: true" >> .dev-mode
+
+echo "✅ Task Checkpoint 已创建（11 个步骤）"
+```
+
+**更新后的 .dev-mode 格式**：
+```
+dev
+branch: H7-task-checkpoint
+prd: .prd.md
+started: 2026-01-29T10:00:00+00:00
+tasks_created: true
+```
+
+**Hook 检查**：
+- branch-protect.sh 检查 `tasks_created: true`
+- 缺少此字段时阻止写代码，提示运行 /dev
+
+**然后标记前 3 个 Task 完成**：
+
+```javascript
+// Step 1-3 已完成
+TaskUpdate({ taskId: "1", status: "completed" })  // PRD 确认
+TaskUpdate({ taskId: "2", status: "completed" })  // 环境检测
+TaskUpdate({ taskId: "3", status: "completed" })  // 分支创建
+TaskUpdate({ taskId: "4", status: "in_progress" }) // DoD 定稿 - 下一步
 ```
 
 ---

@@ -1,12 +1,12 @@
 ---
 id: golden-paths
-version: 2.24.0
-created: 2026-01-28
-updated: 2026-01-28
+version: 2.29.0
+created: 2026-01-29
+updated: 2026-01-29
 source: features/feature-registry.yml
 generation: auto-generated (scripts/generate-path-views.sh)
 changelog:
-  - 2.24.0: 从 feature-registry.yml 自动生成
+  - 2.29.0: 从 feature-registry.yml 自动生成
 ---
 
 # Golden Paths - 端到端成功路径
@@ -32,16 +32,18 @@ changelog:
 
 ---
 
-## GP-002: Stop Hook Quality Gate (H7)
+## GP-002: Stop Hook Loop Controller (H7)
 
-**Feature**: H7 - Stop Hook Quality Gate
-**Priority**: P2
+**Feature**: H7 - Stop Hook Loop Controller
+**Priority**: P0
 
 ### Golden Path
 
 ```
-null
+会话结束 → 检测 .dev-mode → 检查完成条件 → exit 2 (继续) | exit 0 (结束)
 ```
+
+**RCI 覆盖**: H7-001,H7-002,H7-003
 
 ---
 
@@ -234,12 +236,12 @@ PR 创建 → CI 触发 → version-check + test + DevGate → 全部通过 → 
 ## GP-015: Worktree Parallel Development (P5)
 
 **Feature**: P5 - Worktree Parallel Development
-**Priority**: P2
+**Priority**: P1
 
 ### Golden Path
 
 ```
-/dev 启动 → 自动检测环境 → 开发（单任务）
+/dev Step 3 → 检测主仓库 .dev-mode → 有则阻止创建分支，必须用 worktree
 ```
 
 **RCI 覆盖**: W6-001
@@ -261,6 +263,21 @@ PR 创建 → CI 触发 → version-check + test + DevGate → 全部通过 → 
 
 ---
 
+## GP-017: Credential Guard (H8)
+
+**Feature**: H8 - Credential Guard
+**Priority**: P0
+
+### Golden Path
+
+```
+写入代码 → credential-guard.sh 检测 → 真实凭据 → exit 2 (阻止) | 占位符/credentials目录 → exit 0 (放行)
+```
+
+**RCI 覆盖**: H8-001,H8-002,H8-003
+
+---
+
 ## 更新规则
 
 **本文件自动生成，不要手动编辑**。
@@ -273,5 +290,5 @@ PR 创建 → CI 触发 → version-check + test + DevGate → 全部通过 → 
 ---
 
 **来源**: features/feature-registry.yml
-**版本**: 2.24.0
-**生成时间**: 2026-01-28
+**版本**: 2.29.0
+**生成时间**: 2026-01-29

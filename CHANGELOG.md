@@ -7,6 +7,54 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [11.4.0] - 2026-01-29
+
+### Added
+
+- **Task Checkpoint 强制执行**
+  - `hooks/branch-protect.sh v18`: 检查 `.dev-mode` 中的 `tasks_created: true` 字段
+  - `skills/dev/steps/03-branch.md`: 分支创建后自动创建 11 个 Task（Step 1-11）
+  - 所有 step 文件添加 TaskUpdate 指令（开始/完成状态）
+  - 用户可实时看到 /dev 流程进度
+
+### Changed
+
+- **branch-protect.sh 升级到 v18**
+  - 在 PRD/DoD 检查后增加 Task Checkpoint 检查
+  - 缺少 `tasks_created: true` 时阻止写代码
+
+## [11.3.0] - 2026-01-29
+
+### Added
+
+- **Stop Hook 循环控制器**（替代 Ralph Loop）
+  - 新增 `hooks/stop.sh`: 检测 `.dev-mode` 文件，根据完成条件控制会话结束
+  - `.dev-mode` 文件作为循环信号（Step 1 创建，Step 11 删除）
+  - 完成条件检查：PR 创建 + CI 通过 + PR 合并
+  - 无头模式支持：`CECELIA_HEADLESS=true` 时直接 exit 0
+
+- **Worktree 自动检测**
+  - `skills/dev/steps/02-detect.md`: 检测主仓库活跃任务，建议使用 worktree
+
+### Changed
+
+- **skills/dev/SKILL.md v2.3.0**
+  - Stop Hook 替代 Ralph Loop 作为循环控制器
+  - 移除 p0/p1/p2 阶段检测
+  - 更新工作流程图和完成条件说明
+
+- **步骤文件更新**
+  - `skills/dev/steps/01-prd.md`: 添加 `.dev-mode` 文件创建
+  - `skills/dev/steps/11-cleanup.md`: 添加 `.dev-mode` 文件删除
+
+- **全局配置**
+  - `~/.claude/settings.json`: 添加 Stop hook 配置
+
+### Removed
+
+- 移除对 Ralph Loop 插件的依赖
+- 移除 p0/p1/p2 阶段检测逻辑
+
 ## [11.2.11] - 2026-01-28
 
 ### Added
