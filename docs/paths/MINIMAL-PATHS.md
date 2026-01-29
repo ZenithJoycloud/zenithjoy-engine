@@ -1,12 +1,12 @@
 ---
 id: minimal-paths
-version: 2.24.0
-created: 2026-01-28
-updated: 2026-01-28
+version: 2.29.0
+created: 2026-01-29
+updated: 2026-01-29
 source: features/feature-registry.yml
 generation: auto-generated (scripts/generate-path-views.sh)
 changelog:
-  - 2.24.0: 从 feature-registry.yml 自动生成
+  - 2.29.0: 从 feature-registry.yml 自动生成
 ---
 
 # Minimal Paths - 最小验收路径
@@ -28,9 +28,13 @@ changelog:
 
 ---
 
-### H7: Stop Hook Quality Gate
+### H7: Stop Hook Loop Controller
 
-（暂无 minimal paths）
+1. ✅ **无 .dev-mode → exit 0 (普通会话)**
+2. ✅ **有 .dev-mode + PR 未创建 → exit 2 (继续)**
+3. ✅ **有 .dev-mode + PR 已合并 → 删除 .dev-mode + exit 0 (完成)**
+
+**RCI 覆盖**: H7-001,H7-002,H7-003
 
 ---
 
@@ -176,6 +180,16 @@ changelog:
 
 ---
 
+### H8: Credential Guard
+
+1. ✅ **代码中写真实 token → 被阻止**
+2. ✅ **代码中写占位符 YOUR_XXX → 放行**
+3. ✅ **写入 ~/.credentials/ → 放行**
+
+**RCI 覆盖**: H8-001,H8-002,H8-003
+
+---
+
 ## 更新规则
 
 **本文件自动生成，不要手动编辑**。
@@ -188,5 +202,5 @@ changelog:
 ---
 
 **来源**: features/feature-registry.yml
-**版本**: 2.24.0
-**生成时间**: 2026-01-28
+**版本**: 2.29.0
+**生成时间**: 2026-01-29

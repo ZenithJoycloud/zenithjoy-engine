@@ -1,12 +1,12 @@
 ---
 id: optimal-paths
-version: 2.24.0
-created: 2026-01-28
-updated: 2026-01-28
+version: 2.29.0
+created: 2026-01-29
+updated: 2026-01-29
 source: features/feature-registry.yml
 generation: auto-generated (scripts/generate-path-views.sh)
 changelog:
-  - 2.24.0: 从 feature-registry.yml 自动生成
+  - 2.29.0: 从 feature-registry.yml 自动生成
 ---
 
 # Optimal Paths - 推荐体验路径
@@ -27,10 +27,10 @@ changelog:
 
 ---
 
-### H7: Stop Hook Quality Gate
+### H7: Stop Hook Loop Controller
 
 ```
-null
+会话结束 → 检测 .dev-mode → 检查完成条件 → exit 2 (继续) | exit 0 (结束)
 ```
 
 ---
@@ -152,7 +152,7 @@ PR 创建 → CI 触发 → version-check + test + DevGate → 全部通过 → 
 ### P5: Worktree Parallel Development
 
 ```
-/dev 启动 → 自动检测环境 → 开发（单任务）
+/dev Step 3 → 检测主仓库 .dev-mode → 有则阻止创建分支，必须用 worktree
 ```
 
 ---
@@ -161,6 +161,14 @@ PR 创建 → CI 触发 → version-check + test + DevGate → 全部通过 → 
 
 ```
 问题发现 → 记录到 docs/SELF-EVOLUTION.md → 创建检查项 → 自动化脚本 → 集成到流程
+```
+
+---
+
+### H8: Credential Guard
+
+```
+写入代码 → credential-guard.sh 检测 → 真实凭据 → exit 2 (阻止) | 占位符/credentials目录 → exit 0 (放行)
 ```
 
 ---
@@ -177,5 +185,5 @@ PR 创建 → CI 触发 → version-check + test + DevGate → 全部通过 → 
 ---
 
 **来源**: features/feature-registry.yml
-**版本**: 2.24.0
-**生成时间**: 2026-01-28
+**版本**: 2.29.0
+**生成时间**: 2026-01-29
