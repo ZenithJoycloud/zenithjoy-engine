@@ -112,6 +112,12 @@ if [[ "$REAL_FILE_PATH" =~ $HOME_DIR/.claude/skills/($PROTECTED_ENGINE_SKILLS)/ 
     exit 2
 fi
 # 其他 skills (如 script-manager, credentials 等) 不受保护，可从任何 repo 部署
+# v18: 非 Engine 的全局 skills 直接放行
+if [[ "$REAL_FILE_PATH" == "$HOME_DIR/.claude/skills/"* ]] || \
+   [[ "$FILE_PATH" == "$HOME_DIR/.claude/skills/"* ]]; then
+    # 已经检查过 Engine skills 并阻止了，到这里说明是非 Engine skill，放行
+    exit 0
+fi
 
 # ===== 判断是否需要保护 =====
 NEEDS_PROTECTION=false
