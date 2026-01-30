@@ -44,7 +44,11 @@ const EXCLUDE_PATTERNS = [
   /^skills\/[^/]+\/scripts\//, // Skill 内部脚本
   /^skills\/assurance\//,      // Assurance Skill（实验性，未启用）
   /^skills\/audit\//,          // Audit Skill（内部质检工具）
+  /^skills\/gate\//,           // Gate Skill（Gate 范畴）
+  /^skills\/qa\//,             // QA Skill（内部质检总控）
   /^scripts\/devgate\//,       // DevGate 内部工具（Gate 范畴）
+  /^scripts\/gate\//,          // Gate 脚本（Gate 范畴）
+  /^ci\/scripts\//,            // CI 内部脚本（已由 C8 RCI 覆盖）
   /^scripts\/deploy\.sh$/,     // 部署脚本
   /^scripts\/setup-/,          // 配置脚本
   /^scripts\/run-gate-tests/,  // Gate 执行器（在 GCI）
