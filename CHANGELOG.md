@@ -7,6 +7,42 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [11.12.4] - 2026-01-30
+
+### Added
+
+- **本地版本检查（警告模式）**
+  - `pr-gate-v2.sh` 添加 Part 1.5 版本号检查
+  - 比较 package.json 与 develop 分支版本
+  - `chore:/docs:/test:` commit 跳过检查
+  - 仅警告不阻止，CI 做强制检查
+
+### Documented
+
+- **P2-1: Gate 文件检查不一致**
+  - 分析确认：本地 gate 文件和 CI evidence 是独立互补机制
+  - 无需修复，设计合理
+
+- **P2-2: PRD/DoD 验证规则不一致**
+  - 分析确认：CI 故意更严格，分层设计
+  - 本地快速反馈，CI 严格把关
+
+- **P3-1: RCI 自动化覆盖率**
+  - 审查 41 个 manual RCIs
+  - 确认大多需要人工验证 UX，无法自动化
+
+- **P3-2: metrics 时间窗口测试**
+  - 确认 skip 合理，临时目录隔离问题
+
+## [11.12.3] - 2026-01-30
+
+### Fixed
+
+- **测试清理（第二批）**
+  - 删除 17 个 detect-priority.test.ts 中失效的 skip 测试
+  - 删除 3 个 pr-gate-phase1.test.ts 中失效的 skip 测试
+  - 原因：PR_TITLE 检测功能已在 detect-priority.cjs 移除
+
 ## [11.12.2] - 2026-01-30
 
 ### Security
