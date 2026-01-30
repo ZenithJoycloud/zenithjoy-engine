@@ -1,5 +1,4 @@
 dev
-branch: cp-0130-ci-hardening
-prd: .prd-cp-0130-ci-hardening.md
-started: $(date -Iseconds)
-tasks_created: true
+branch: cp-0130-ci-security-fix
+prd: .prd-cp-0130-ci-security-fix.md
+started: 2026-01-30T20:30:00+00:00
