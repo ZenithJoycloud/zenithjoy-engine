@@ -1,6 +1,6 @@
 # QA Decision: CI 一致性修复（第三批）
 
-Decision: NO_RCI
+Decision: PASS
 Priority: P2
 RepoType: Engine
 
