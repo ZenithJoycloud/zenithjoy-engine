@@ -497,6 +497,45 @@ fi
 fi  # 结束 SKIP_L1_TESTS 的 if 块
 
 # ============================================================================
+# Part 1.5: 版本号检查（警告模式，CI 强制）
+# ============================================================================
+# 检查 package.json 版本是否已更新（相对于 BASE_BRANCH）
+# 仅警告，不阻止 - CI 会做强制检查
+if [[ -f "$PROJECT_ROOT/package.json" ]]; then
+    # 获取最近一次 commit 消息，判断是否跳过版本检查
+    LAST_COMMIT_MSG=$(git log -1 --pretty=%B 2>/dev/null | head -1)
+    SKIP_VERSION_CHECK=0
+
+    # chore:/docs:/test: 开头的 commit 跳过版本检查
+    if [[ "$LAST_COMMIT_MSG" =~ ^(chore|docs|test): ]]; then
+        SKIP_VERSION_CHECK=1
+    fi
+
+    if [[ "$SKIP_VERSION_CHECK" -eq 0 ]]; then
+        echo "" >&2
+        echo "  [版本号检查]" >&2
+        CHECK_COUNT=$((CHECK_COUNT + 1))
+
+        # 获取基准分支版本
+        BASE_VERSION=$(git show "$BASE_BRANCH:package.json" 2>/dev/null | grep '"version"' | head -1 | sed 's/.*"version".*"\\([^"]*\\)".*/\\1/' 2>/dev/null || echo "")
+        CURRENT_VERSION=$(grep '"version"' "$PROJECT_ROOT/package.json" | head -1 | sed 's/.*"version".*"\([^"]*\)".*/\1/' 2>/dev/null || echo "")
+
+        if [[ -z "$BASE_VERSION" ]]; then
+            echo "  ⚠️  无法获取 $BASE_BRANCH 的版本号（新仓库？）" >&2
+        elif [[ -z "$CURRENT_VERSION" ]]; then
+            echo "  ⚠️  无法获取当前 package.json 版本号" >&2
+        elif [[ "$BASE_VERSION" == "$CURRENT_VERSION" ]]; then
+            echo "  ⚠️  版本号未更新: $CURRENT_VERSION (与 $BASE_BRANCH 相同)" >&2
+            echo "      → 建议在 PR 前更新版本号（CI 会强制检查）" >&2
+            echo "      → 规则: fix: → patch, feat: → minor, feat!: → major" >&2
+            # 仅警告，不设置 FAILED=1 - 让 CI 做强制检查
+        else
+            echo "  ✓ 版本号已更新: $BASE_VERSION → $CURRENT_VERSION" >&2
+        fi
+    fi
+fi
+
+# ============================================================================
 # Part 2: PR 模式 - PRD + DoD 检查
 # ============================================================================
 if [[ "$MODE" == "pr" ]]; then
