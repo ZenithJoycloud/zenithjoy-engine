@@ -96,8 +96,33 @@ if [[ ! -f "$DEV_MODE_FILE" ]]; then
 fi
 
 # ===== 检查 cleanup 是否已完成 =====
+# 优先检查 cleanup_done: true（向后兼容旧版本）
 if grep -q "cleanup_done: true" "$DEV_MODE_FILE" 2>/dev/null; then
     rm -f "$DEV_MODE_FILE"
+    exit 0
+fi
+
+# 新版本：检查 11 步 checklist 是否全部完成
+STEPS_COMPLETE=true
+for step in {1..11}; do
+    STEP_STATUS=$(grep "^step_${step}_" "$DEV_MODE_FILE" 2>/dev/null | cut -d' ' -f2 || echo "pending")
+    if [[ "$STEP_STATUS" != "done" ]]; then
+        STEPS_COMPLETE=false
+        break
+    fi
+done
+
+if [[ "$STEPS_COMPLETE" == "true" ]]; then
+    echo "" >&2
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" >&2
+    echo "  [Stop Hook: 11 步流程完成]" >&2
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" >&2
+    echo "" >&2
+    echo "  ✅ Step 1-11 全部完成" >&2
+    echo "  🧹 删除 .dev-mode 文件" >&2
+    echo "" >&2
+    rm -f "$DEV_MODE_FILE"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" >&2
     exit 0
 fi
 
