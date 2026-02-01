@@ -119,16 +119,18 @@ platform_features:
   # H7: Stop Hook Loop Controller - 循环控制器
   # --------------------------------------------------------------------------
   - id: H7
-    name: Stop Hook Loop Controller
+    name: Stop Hook Loop Controller (JSON API)
     status: Committed
     priority: P0
-    version: "11.18.0"
-    updated: "2026-01-31"
+    version: "11.25.0"
+    updated: "2026-02-01"
     description: |
-      Stop Hook 作为 /dev 工作流的循环控制器，替代 Ralph Loop 插件：
+      Stop Hook 作为 /dev 工作流的循环控制器，使用官方 JSON API 实现：
       - 检测 .dev-mode 文件决定是否为 /dev 会话
       - 检查完成条件：PR 创建 + CI 通过 + PR 合并
-      - 未完成时 exit 2 阻止会话结束，Claude 继续执行
+      - 未完成时输出 JSON API ({"decision": "block", "reason": "..."}) 强制循环
+      - 重试上限 15 次（主 Agent），SubagentStop Hook 5 次（子 Agent）
+      - 超限后调用 track.sh 上报失败
       - 完成时（cleanup_done: true）删除 .dev-mode 并 exit 0
       - 无头模式 (CECELIA_HEADLESS=true) 直接 exit 0，由外部循环控制
       v11.18.0: H7-008 - TTY 会话隔离，有头模式下按 terminal (/dev/pts/N) 隔离
