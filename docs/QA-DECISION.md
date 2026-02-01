@@ -8,13 +8,13 @@ Tests:
   - dod_item: "skills/dev/SKILL.md 在前 100 行内包含绝对禁止行为章节"
     method: manual
     location: "manual:AI-RULE-01"
-  - dod_item: "skills/dev/SKILL.md 列出 6 条禁止话术"
+  - dod_item: "skills/dev/SKILL.md 列出 11 条禁止话术"
     method: manual
     location: "manual:AI-RULE-02"
-  - dod_item: "~/.claude/CLAUDE.md 在前 50 行内包含 AI 自我检测章节"
+  - dod_item: "/home/xx/.claude/CLAUDE.md 在前 50 行内包含 AI 自我检测章节"
     method: manual
     location: "manual:AI-RULE-03"
-  - dod_item: "~/.claude/CLAUDE.md 包含 6 个关键词触发自检机制"
+  - dod_item: "/home/xx/.claude/CLAUDE.md 包含 11 个关键词触发自检机制"
     method: manual
     location: "manual:AI-RULE-04"
   - dod_item: "两处都包含对比表：AI 默认倾向 vs 正确行为"
@@ -23,6 +23,9 @@ Tests:
   - dod_item: "两处都使用⛔表情符号和 CRITICAL 标记"
     method: manual
     location: "manual:AI-RULE-06"
+  - dod_item: "/home/xx/.claude/CLAUDE.md 包含自检流程说明"
+    method: manual
+    location: "manual:AI-RULE-07"
 
 RCI:
   new: []

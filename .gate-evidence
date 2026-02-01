@@ -47,6 +47,14 @@
       "evidence": "skills/dev/SKILL.md 第 63 行使用 ⛔ 和（CRITICAL），/home/xx/.claude/CLAUDE.md 第 3 行使用 ⛔ 和（CRITICAL - 优先级最高）",
       "verified_by": "claude",
       "verified_at": "2026-02-01T11:54:00Z"
+    },
+    {
+      "id": "AI-RULE-07",
+      "dod_item": "/home/xx/.claude/CLAUDE.md 包含自检流程说明（紧跟关键词列表之后）",
+      "status": "PASS",
+      "evidence": "自检流程说明包含：1) 遇到关键词时的自检问题（3个问题），2) 核心原则对比表",
+      "verified_by": "claude",
+      "verified_at": "2026-02-01T12:00:00Z"
     }
   ]
 }
