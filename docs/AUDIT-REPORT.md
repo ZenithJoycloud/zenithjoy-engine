@@ -1,11 +1,12 @@
 # Audit Report
 
-Branch: cp-02011540-workflow-guard
+Branch: cp-02011917-stop-hook-json-api
 Date: 2026-02-01
-Scope: .github/workflows/nightly.yml
+Scope: hooks/stop.sh, hooks/subagent-stop.sh, .claude/settings.json, regression-contract.yaml, .gitignore
 Target Level: L2
 
 ## Summary
+
 - L1: 0
 - L2: 0
 - L3: 0
@@ -13,54 +14,91 @@ Target Level: L2
 
 Decision: PASS
 
+---
+
+## Audit Details
+
+### L1 阻塞性检查
+
+✅ **无阻塞性问题**
+
+- Bash 语法检查通过（`bash -n` 验证）
+- jq 命令可用（已测试 JSON 输出格式）
+- 所有 `exit 2` 已正确替换为 `jq -n ... + exit 0`
+- 文件路径引用正确（DEV_MODE_FILE, PROJECT_ROOT 等）
+- Hook 配置格式正确（.claude/settings.json）
+
+### L2 功能性检查
+
+✅ **无功能性问题**
+
+**hooks/stop.sh 变更分析**：
+- ✅ 重试上限从 20 改为 15（符合需求）
+- ✅ 所有 7 处 `exit 2` 已替换为 JSON API 格式
+- ✅ JSON 输出使用 `--arg` 安全传参，避免注入风险
+- ✅ 版本号更新为 v11.25.0，注释准确
+- ✅ track.sh 调用错误消息已更新（20 → 15）
+
+**hooks/subagent-stop.sh 新文件**：
+- ✅ Bash shebang 和 set options 正确
+- ✅ 5 次重试上限逻辑正确
+- ✅ JSON API 输出格式正确
+- ✅ 超限后 exit 0 允许 Subagent 结束（符合设计）
+- ✅ agent_type 提取使用 jq，有 fallback 到 "unknown"
+
+**.claude/settings.json 变更**：
+- ✅ SubagentStop Hook 配置格式正确
+- ✅ JSON 格式有效
+
+**regression-contract.yaml 变更**：
+- ✅ H7-001/002 method 从 manual 改为 auto，tags 增加 json-api/retry-limit
+- ✅ H7-003 name 更新为"JSON API 强制循环"，evidence 改为检查 "decision.*block"
+- ✅ H7-001/002/003 test 字段添加正确的测试文件路径
+- ✅ H7-009 已存在，无需新增
+
+**.gitignore 变更**：
+- ✅ 为本次 PRD/DoD 添加例外，允许纳入版本控制
+
+### L3 最佳实践检查
+
+✅ **无需改进**
+
+- 代码风格与现有 hooks 一致
+- 注释清晰，版本历史完整
+- 变量命名规范（RETRY_COUNT, SUBAGENT_RETRY_COUNT）
+- 错误消息友好且信息完整
+
+---
+
 ## Findings
 
-### Code Review
+*无问题发现*
 
-审计范围：nightly.yml workflow guard job 实现
-
-#### ✅ Check-trigger Guard Job (L1/L2)
-- **文件**: .github/workflows/nightly.yml:20-42
-- **检查项**: Guard job 结构正确性
-- **结果**: PASS
-  - 正确检查 `github.event_name != "push"`
-  - 正确设置 `should-run` output
-  - timeout 1分钟合理
-
-#### ✅ Job Dependencies (L1/L2)
-- **文件**: .github/workflows/nightly.yml:44-46
-- **检查项**: regression job 依赖 check-trigger
-- **结果**: PASS
-  - 正确使用 `needs: [check-trigger]`
-  - 正确使用 `if: needs.check-trigger.outputs.should-run == 'true'`
-
-#### ✅ Notify Job Fix (L2)
-- **文件**: .github/workflows/nightly.yml:215-217
-- **检查项**: notify job 依赖关系
-- **结果**: PASS
-  - 简化为只依赖 regression（原本错误地依赖 check-trigger）
-  - 保持 `always()` 条件确保总是通知
-
-### Scope Check
-
-✅ 改动范围符合 PRD 和 QA-DECISION.md：
-- 只修改了 nightly.yml（添加 guard job）
-- 未触碰 forbidden 区域
-- 符合 CI infrastructure bugfix 定位
-
-### Proof Check
-
-✅ 所有 DoD 验收项对应的测试方法有效：
-- 8 个验收项全部为 manual 测试
-- manual 测试描述具体可验证
-- 包含明确的验证方法和预期结果
+---
 
 ## Blockers
 
-无（L1 + L2 问题数 = 0）
+*无阻塞问题*
 
-## Notes
+---
 
-- back-merge-main-to-develop.yml 已在之前的 PR 中实现 guard job，本次无需修改
-- nightly.yml guard job 实现符合 PRD 要求
-- 修复了 notify job 的依赖关系，简化逻辑
+## 验证清单
+
+- [x] Bash 语法正确（bash -n 通过）
+- [x] jq 命令可用且 JSON 格式正确
+- [x] 所有 exit 2 已替换（7 处）
+- [x] 重试上限已更新（20 → 15）
+- [x] SubagentStop Hook 已创建
+- [x] settings.json 已更新 SubagentStop 配置
+- [x] regression-contract.yaml RCI 已更新
+- [x] 版本号和注释已更新
+
+---
+
+## 结论
+
+**L1/L2 问题：0 个**
+
+代码实现完全符合 PRD 要求，无阻塞性或功能性问题。所有 JSON API 替换正确，重试上限调整准确，SubagentStop Hook 实现完整。
+
+可以继续下一步：写测试。
