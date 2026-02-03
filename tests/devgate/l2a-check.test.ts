@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { readFileSync, writeFileSync, unlinkSync, mkdirSync } from 'fs';
 import { join } from 'path';
 import { execSync } from 'child_process';
@@ -101,7 +101,7 @@ describe('L2A Check - P1-1 Structure Validation', () => {
 
       // 验证包含 checkbox 计数逻辑
       expect(content).toContain('CHECKBOX_COUNT');
-      expect(content).toMatch(/grep -c "^- \[[ x]\] "/);
+      expect(content).toContain('grep -c "^- \\[[ x]\\] "');
       expect(content).toMatch(/CHECKBOX_COUNT.*-lt 3/);
     });
 

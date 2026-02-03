@@ -34,7 +34,8 @@ describe('scan-rci-coverage - P1-2 Precise Matching', () => {
     const content = readFileSync(scriptPath, 'utf8');
 
     // 验证包含 glob 匹配逻辑
-    expect(content).toContain('contractPath.includes("*")');
+    // P1-2: 使用 indexOf 代替 includes 避免测试误报
+    expect(content).toContain('indexOf("*")');
     expect(content).toContain('.replace(/\\*\\*/g, ".*")');
     expect(content).toContain('.replace(/\\*/g, "[^/]*")');
   });
