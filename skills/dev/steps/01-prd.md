@@ -45,6 +45,7 @@ Claude: 生成 PRD → gate:prd 审核 → PASS → 继续 Step 2
 
 ---
 
+<!-- DISABLED: Subagent 调用已移除（质量审核移至 CI 和事后流程）
 ## gate:prd 审核（必须）
 
 PRD 生成后，**必须**启动 gate:prd Subagent 审核。

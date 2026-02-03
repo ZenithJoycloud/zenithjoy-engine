@@ -72,6 +72,7 @@ IS_TEST=$(git config branch."$BRANCH_NAME".is-test 2>/dev/null)
 
 ---
 
+<!-- DISABLED: Subagent 调用已移除（质量审核移至 CI 和事后流程）
 ## gate:learning 审核（必须）
 
 Learning 使用 Subagent 执行，**写好才能继续**。
@@ -132,6 +133,7 @@ git commit -m "docs: 记录开发经验"
 git push
 ```
 
+-->
 ### 手动模式（备选）
 
 1. **回顾本次开发**

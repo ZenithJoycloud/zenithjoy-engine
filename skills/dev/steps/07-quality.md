@@ -6,6 +6,7 @@
 
 ---
 
+<!-- DISABLED: Subagent 调用已移除（质量审核移至 CI 和事后流程）
 ## gate:quality 检查（必须）
 
 Quality 使用 Subagent 执行，**所有检查通过才能继续**。
@@ -35,6 +36,7 @@ Skill({
 })
 ```
 
+-->
 ### PASS 后操作
 
 ```bash

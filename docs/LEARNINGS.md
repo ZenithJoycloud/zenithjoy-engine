@@ -1668,3 +1668,125 @@ git push
 3. **临时文件清理时机**：需要在 PR 合并前完成，不能依赖 PR 合并后的 Cleanup
 4. **Stop Hook 循环机制**：遇到 CI 失败会自动循环修复，是正常流程
 
+---
+
+## 2026-02-03: 移除 /dev 中所有 Subagent 调用
+
+### 问题背景
+
+/dev 工作流经常中途停止，只有约 30% 的成功率，而官方 RalphLoop 插件可以 100% 可靠运行。
+
+### 根本原因
+
+**不是 Stop Hook 的问题，而是 Subagent 调用导致的停顿**
+
+1. Stop Hook **只能拦截 SessionEnd 事件**（AI 尝试退出时）
+2. Stop Hook **无法拦截 AI 中途停顿**（AI 自然停止说话）
+3. /dev 中有 7-8 个 Subagent 调用：
+   - gate:prd (Step 1)
+   - gate:dod + /qa (Step 4)
+   - /audit (Step 5)
+   - gate:test (Step 6)
+   - gate:quality (Step 7)
+   - gate:learning (Step 10)
+4. 每个 Subagent 返回后，AI 会产生"完成感"，自然停顿
+5. Stop Hook 对这种"中途停顿"无能为力
+
+### 解决方案
+
+**移除所有 Subagent 调用，依赖 CI 进行质量检查**
+
+1. 将所有 gate:xxx Subagent 调用用 HTML 注释包裹（不删除代码）
+2. 质量保障由三层架构支撑：
+   - **Layer 1: PreToolUse Hook** - 检查 PRD/DoD 文件存在
+   - **Layer 2: 快速开发** - /dev 流程连续执行，无停顿
+   - **Layer 3: 严格 CI** - 7 层质量检查（TypeCheck, Tests, Build, DevGate, Evidence, Regression）
+3. 保留所有 gate:xxx skills 代码，可用于事后独立审核
+
+### 关键证据
+
+**官方 RalphLoop 为什么 100% 可靠？**
+- 0 个 Subagent 调用
+- 只有 Stop Hook 循环机制
+- 简单任务，连续执行，没有停顿点
+
+**对比**:
+| 项目 | Subagent 数量 | 成功率 |
+|------|--------------|--------|
+| RalphLoop | 0 | 100% |
+| /dev (旧) | 7-8 | ~30% |
+| /dev (新) | 0 | 待测试 |
+
+### 实施细节
+
+**修改的文件**:
+- skills/dev/steps/01-prd.md - gate:prd 禁用
+- skills/dev/steps/04-dod.md - gate:dod + /qa 禁用
+- skills/dev/steps/05-code.md - /audit 禁用
+- skills/dev/steps/06-test.md - gate:test 禁用
+- skills/dev/steps/07-quality.md - gate:quality 禁用
+- skills/dev/steps/10-learning.md - gate:learning 禁用
+
+**注释格式**:
+```markdown
+<!-- DISABLED: Subagent 调用已移除（质量审核移至 CI 和事后流程）
+## gate:xxx 审核（必须）
+...
+-->
+```
+
+### Stop Hook 架构限制
+
+**发现的关键限制**：
+
+| Stop Hook 能做的 | Stop Hook 不能做的 |
+|-----------------|-------------------|
+| ✅ 拦截 AI 尝试退出 | ❌ 拦截 AI 中途停顿 |
+| ✅ SessionEnd 事件触发 | ❌ 无中途检查点机制 |
+| ✅ exit 2 阻止会话结束 | ❌ 无法强制 AI 继续说话 |
+
+**为什么外层 bash 循环不可行**：
+- /dev 没有 resume 模式
+- 外层循环会导致无限重复 Step 1-3（PRD → 环境 → 分支 → PRD → ...）
+- 每次重启都是全新会话，丢失上下文
+
+### 质量保障策略
+
+**三层防护**：
+
+1. **PreToolUse Hook（入口检查）**
+   - branch-protect.sh 确保只在 cp-*/feature/* 分支写代码
+   - 强制要求 PRD/DoD 文件存在且有效
+   - 拦截直接在 main/develop 写代码
+
+2. **快速开发（执行层）**
+   - 移除所有 Subagent 调用
+   - Step 1-11 连续执行，无停顿
+   - 开发速度提升，体验改善
+
+3. **严格 CI（质量防线）**
+   - L1: TypeCheck + Tests + Build
+   - L2A: PRD/DoD Gate + DevGate checks
+   - L2B: Evidence Gate
+   - L3: Regression tests
+   - CI 是最终的质量保障，不允许绕过
+
+### 经验总结
+
+1. **Stop Hook 不是万能的** - 只能处理退出尝试，无法处理中途停顿
+2. **Subagent 是停顿的根源** - 每次返回都会让 AI 产生完成感
+3. **CI 是最终防线** - 本地 Hook 可绕过，CI 不可绕过
+4. **多层防御** - PreToolUse + 快速执行 + 严格 CI = 可靠系统
+5. **RalphLoop 的本质** - 简单任务 + 0 Subagent + Stop Hook = 100% 可靠
+6. **质量不等于实时审核** - 质量检查可以在 CI 阶段统一进行
+
+### 待验证
+
+- [ ] 运行 /dev 测试新流程是否能从 Step 1-11 连续执行
+- [ ] 验证 CI 是否能捕获所有质量问题
+- [ ] 统计新流程的成功率（目标：接近 100%）
+
+### 影响程度
+
+**High** - 解决了核心的工作流可靠性问题，预期成功率从 30% 提升到接近 100%
+

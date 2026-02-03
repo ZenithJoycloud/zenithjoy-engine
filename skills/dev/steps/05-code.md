@@ -38,6 +38,7 @@ A: 调整方案，重新实现。
 
 ---
 
+<!-- DISABLED: Subagent 调用已移除（质量审核移至 CI 和事后流程）
 ## 完成后：gate:audit 审核（必须）
 
 代码写完后，**必须**启动 gate:audit Subagent 审计。
@@ -97,6 +98,7 @@ bash scripts/gate/generate-gate-file.sh audit
 - gate:audit 在 gate:test 之前执行
 - 改完代码再跑 Test，避免测试白跑
 
+-->
 **标记步骤完成**：
 
 ```bash

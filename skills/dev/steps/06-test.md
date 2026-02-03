@@ -73,6 +73,7 @@ describe('login', () => {
 
 ---
 
+<!-- DISABLED: Subagent 调用已移除（质量审核移至 CI 和事后流程）
 ## gate:test 审核（必须）
 
 测试写完后，**必须**启动 gate:test Subagent 审核。
@@ -122,6 +123,7 @@ Skill({
 })
 ```
 
+-->
 ### PASS 后操作
 
 ```bash

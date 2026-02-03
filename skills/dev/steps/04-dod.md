@@ -32,6 +32,7 @@ DoD 草稿:
 
 ---
 
+<!-- DISABLED: Subagent 调用已移除（质量审核移至 CI 和事后流程）
 ## Step 4.2: QA Decision Node（必须）
 
 **在 DoD 定稿前，必须输出 QA 决策产物**。
@@ -108,6 +109,7 @@ QA: docs/QA-DECISION.md   ← 必须引用
 
 ---
 
+-->
 ## DoD 模板
 
 ```markdown
@@ -149,6 +151,7 @@ PR Gate 会检查：
 
 ---
 
+<!-- DISABLED: Subagent 调用已移除（质量审核移至 CI 和事后流程）
 ## Step 4.4: 并行审核（必须）
 
 DoD 定稿后，**并行**启动两个 Subagent：gate:dod + gate:qa
