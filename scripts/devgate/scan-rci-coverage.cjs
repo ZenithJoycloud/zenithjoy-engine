@@ -614,20 +614,30 @@ function main() {
           const contract = contracts.find((c) => c.id === contractId);
           if (contract) {
             console.log(`    ├─ ${contractId}: "${contract.name}"`);
-            // 找出匹配原因
+            // P1-2 修复：找出匹配原因（使用与 checkCoverage 相同的精确逻辑）
             const matchReasons = [];
             for (const contractPath of contract.paths) {
+              // 精确匹配
               if (entry.path === contractPath) {
-                matchReasons.push(`exact_path_match: "${contractPath}"`);
-              } else if (entry.path.includes(contractPath) || contractPath.includes(entry.path)) {
-                matchReasons.push(`path_contains: "${contractPath}"`);
-              } else if (contractPath.includes(entry.name)) {
-                matchReasons.push(`name_in_path: "${contractPath}" contains "${entry.name}"`);
+                matchReasons.push(`exact_path: "${contractPath}"`);
+              }
+              // 目录匹配
+              else if (contractPath.endsWith("/") && entry.path.startsWith(contractPath)) {
+                matchReasons.push(`dir_prefix: "${contractPath}"`);
+              }
+              // glob 匹配
+              else if (contractPath.includes("*")) {
+                const regexStr = contractPath
+                  .replace(/\./g, "\\.")
+                  .replace(/\*\*/g, ".*")
+                  .replace(/\*/g, "[^/]*");
+                const regex = new RegExp(`^${regexStr}$`);
+                if (regex.test(entry.path)) {
+                  matchReasons.push(`glob: "${contractPath}"`);
+                }
               }
             }
-            if (contract.name.includes(entry.name)) {
-              matchReasons.push(`name_in_contract: "${contract.name}" contains "${entry.name}"`);
-            }
+            // P1-2: 移除了 name.includes 误判逻辑（调试输出也不再使用）
             for (const reason of matchReasons) {
               console.log(`    │  └─ ${reason}`);
             }
