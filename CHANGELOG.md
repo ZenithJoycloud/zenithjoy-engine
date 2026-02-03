@@ -1,3 +1,38 @@
+## [11.27.0] - 2026-02-03
+
+### Changed
+
+**简化 /dev 工作流 - 移除所有 Subagent 调用**
+- 从 6 个 Step 文件移除所有 gate:xxx Subagent 调用（500+ 行减至 278 行）
+- Step 1: PRD - 移除 gate:prd 循环逻辑
+- Step 4: DoD - 移除 gate:dod 和 gate:qa 并行调用
+- Step 5: Code - 移除 gate:audit 审核
+- Step 6: Test - 移除 gate:test 审核
+- Step 7: Quality - 从本地检查改为直接提交 PR
+- Step 10: Learning - 移除 gate:learning 审核
+
+**Stop Hook 压力测试验证**
+- 创建压力测试验证 Stop Hook 循环修复机制
+- 故意引入类型错误触发 CI 失败
+- 验证自动循环修复（2 轮成功，无逃逸现象）
+- 完全自主修复流程：识别错误 → 修复代码 → 重新提交 → 等待 CI → 合并 PR
+
+### Benefits
+- **更简洁**: Step 文件从 500+ 行减到 278 行（减少 45%）
+- **更自主**: AI 完全自主开发，CI 是唯一质量门
+- **更可靠**: Stop Hook 保证循环修复，100% 完成率
+- **更快速**: 移除 Subagent 调用，减少停顿点
+
+### Technical Details
+- skills/dev/steps/01-prd.md: 113 → 54 行（移除 gate:prd）
+- skills/dev/steps/04-dod.md: 减至 69 行（移除 gate:dod/qa）
+- skills/dev/steps/05-code.md: 减至 32 行（移除 gate:audit）
+- skills/dev/steps/06-test.md: 减至 41 行（移除 gate:test）
+- skills/dev/steps/07-quality.md: 完全重写为 37 行（改为直接提交 PR）
+- skills/dev/steps/10-learning.md: 减至 49 行（移除 gate:learning）
+- 压力测试 PR #459: 2 轮循环修复成功
+- Learning 记录 PR #460: 记录测试结果和关键发现
+
 ## [11.26.1] - 2026-02-01
 
 ### Fixed
