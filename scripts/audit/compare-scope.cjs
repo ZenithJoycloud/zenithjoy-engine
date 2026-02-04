@@ -8,7 +8,7 @@
 const { execSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
-const { DEFAULT_BASE_BRANCH, DEFAULT_HEAD_REF, QA_DECISION_PATH } = require('../lib/constants.cjs');
+const { DEFAULT_BASE_BRANCH, DEFAULT_HEAD_REF, QA_DECISION_PATH, debugLog } = require('../lib/constants.cjs');
 
 const args = process.argv.slice(2);
 let base = DEFAULT_BASE_BRANCH;
@@ -33,6 +33,7 @@ function getChangedFiles() {
     const diff = execSync(`git diff --name-only ${base}...${head}`, { encoding: 'utf-8' });
     return diff.split('\n').filter(Boolean);
   } catch (error) {
+    debugLog('getChangedFiles failed:', error.message);
     return [];
   }
 }
