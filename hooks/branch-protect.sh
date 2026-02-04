@@ -302,11 +302,13 @@ if [[ "$CURRENT_BRANCH" =~ ^cp-[a-zA-Z0-9][-a-zA-Z0-9_]*$ ]] || \
     fi
 
     # v17: 检查新旧两种格式的 PRD 文件（仅对非 gitignored 文件有效）
+    # Bug fix: 使用 grep -F (fixed string) 避免 regex 注入风险
+    # 如果分支名包含 [、] 等特殊字符，-E 模式会错误解析
     if [[ "$PRD_GITIGNORED" -eq 0 ]]; then
-        PRD_IN_BRANCH=$(clean_number "$(git log "$BASE_BRANCH"..HEAD --name-only 2>/dev/null | grep -cE "(^|/)$PRD_BASENAME$" || echo 0)")
-        PRD_STAGED=$(clean_number "$(git diff --cached --name-only 2>/dev/null | grep -cE "(^|/)$PRD_BASENAME$" || echo 0)")
-        PRD_MODIFIED=$(clean_number "$(git diff --name-only 2>/dev/null | grep -cE "(^|/)$PRD_BASENAME$" || echo 0)")
-        PRD_UNTRACKED=$(clean_number "$(git status --porcelain 2>/dev/null | grep -cE "^\?\? (.*\/)?$PRD_BASENAME$" || echo 0)")
+        PRD_IN_BRANCH=$(clean_number "$(git log "$BASE_BRANCH"..HEAD --name-only 2>/dev/null | grep -cF "$PRD_BASENAME" || echo 0)")
+        PRD_STAGED=$(clean_number "$(git diff --cached --name-only 2>/dev/null | grep -cF "$PRD_BASENAME" || echo 0)")
+        PRD_MODIFIED=$(clean_number "$(git diff --name-only 2>/dev/null | grep -cF "$PRD_BASENAME" || echo 0)")
+        PRD_UNTRACKED=$(clean_number "$(git status --porcelain 2>/dev/null | grep -cF "$PRD_BASENAME" || echo 0)")
 
         if [[ "$PRD_IN_BRANCH" -eq 0 && "$PRD_STAGED" -eq 0 && "$PRD_MODIFIED" -eq 0 && "$PRD_UNTRACKED" -eq 0 ]]; then
             echo "" >&2
@@ -330,11 +332,12 @@ if [[ "$CURRENT_BRANCH" =~ ^cp-[a-zA-Z0-9][-a-zA-Z0-9_]*$ ]] || \
     fi
 
     # v17: 检查新旧两种格式的 DoD 文件（仅对非 gitignored 文件有效）
+    # Bug fix: 使用 grep -F (fixed string) 避免 regex 注入风险
     if [[ "$DOD_GITIGNORED" -eq 0 ]]; then
-        DOD_IN_BRANCH=$(clean_number "$(git log "$BASE_BRANCH"..HEAD --name-only 2>/dev/null | grep -cE "(^|/)$DOD_BASENAME$" || echo 0)")
-        DOD_STAGED=$(clean_number "$(git diff --cached --name-only 2>/dev/null | grep -cE "(^|/)$DOD_BASENAME$" || echo 0)")
-        DOD_MODIFIED=$(clean_number "$(git diff --name-only 2>/dev/null | grep -cE "(^|/)$DOD_BASENAME$" || echo 0)")
-        DOD_UNTRACKED=$(clean_number "$(git status --porcelain 2>/dev/null | grep -cE "^\?\? (.*\/)?$DOD_BASENAME$" || echo 0)")
+        DOD_IN_BRANCH=$(clean_number "$(git log "$BASE_BRANCH"..HEAD --name-only 2>/dev/null | grep -cF "$DOD_BASENAME" || echo 0)")
+        DOD_STAGED=$(clean_number "$(git diff --cached --name-only 2>/dev/null | grep -cF "$DOD_BASENAME" || echo 0)")
+        DOD_MODIFIED=$(clean_number "$(git diff --name-only 2>/dev/null | grep -cF "$DOD_BASENAME" || echo 0)")
+        DOD_UNTRACKED=$(clean_number "$(git status --porcelain 2>/dev/null | grep -cF "$DOD_BASENAME" || echo 0)")
 
         if [[ "$DOD_IN_BRANCH" -eq 0 && "$DOD_STAGED" -eq 0 && "$DOD_MODIFIED" -eq 0 && "$DOD_UNTRACKED" -eq 0 ]]; then
             echo "" >&2
@@ -355,14 +358,37 @@ if [[ "$CURRENT_BRANCH" =~ ^cp-[a-zA-Z0-9][-a-zA-Z0-9_]*$ ]] || \
     DEV_MODE_FILE="$PROJECT_ROOT/.dev-mode"
     if [[ -f "$DEV_MODE_FILE" ]]; then
         # Bug #6 修复: 检查 Step 3 状态，如果正在执行则允许通过
+        # Bug fix: 增加 Step 3 超时检查（防止卡在 in_progress 绕过检查）
         STEP_3_STATUS=$(grep "^step_3_branch:" "$DEV_MODE_FILE" 2>/dev/null | awk '{print $2}' || echo "pending")
-        if [[ "$STEP_3_STATUS" == "in_progress" || "$STEP_3_STATUS" == "done" ]]; then
-            # Step 3 正在执行或已完成，允许通过（避免竞态条件）
+        STEP_3_TIME=$(grep "^step_3_time:" "$DEV_MODE_FILE" 2>/dev/null | awk '{print $2}' || echo "0")
+        CURRENT_TIME=$(date +%s)
+
+        if [[ "$STEP_3_STATUS" == "in_progress" ]]; then
+            # 检查是否超时（10 分钟 = 600 秒）
+            if [[ "$STEP_3_TIME" -gt 0 ]] && [[ $((CURRENT_TIME - STEP_3_TIME)) -gt 600 ]]; then
+                echo "" >&2
+                echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" >&2
+                echo "  [ERROR] Step 3 超时（卡在 in_progress 超过 10 分钟）" >&2
+                echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" >&2
+                echo "" >&2
+                echo "可能原因: 上次 /dev 执行中断" >&2
+                echo "请删除 .dev-mode 并重新运行 /dev" >&2
+                echo "" >&2
+                echo "[SKILL_REQUIRED: dev]" >&2
+                exit 2
+            fi
+            # Step 3 正在执行，允许通过
+            exit 0
+        fi
+
+        if [[ "$STEP_3_STATUS" == "done" ]]; then
+            # Step 3 已完成，允许通过
             exit 0
         fi
 
         # 否则检查 tasks_created
-        TASKS_CREATED=$(grep "^tasks_created:" "$DEV_MODE_FILE" 2>/dev/null | cut -d' ' -f2 || echo "")
+        # Bug fix: 使用 awk 替代 cut，避免多空格边界问题
+        TASKS_CREATED=$(grep "^tasks_created:" "$DEV_MODE_FILE" 2>/dev/null | awk '{print $2}' || echo "")
         if [[ "$TASKS_CREATED" != "true" ]]; then
             echo "" >&2
             echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" >&2
