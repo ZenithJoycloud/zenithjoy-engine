@@ -15,9 +15,10 @@
 # - product_features:  引擎核心能力（工作流、测试、报告、自动化）
 # ============================================================================
 
-version: "2.63.0"
+version: "2.64.0"
 updated: "2026-02-04"
 changelog:
+  - 2.64.0: v12.4.14 - Hook gitignored 文件检测修复 + 时间窗口测试修复
   - 2.63.0: v12.4.13 - Hook 共享工具库
   - 2.62.0: v12.4.12 - CI 版本同步检查
   - 2.61.0: v12.4.11 - DEBUG 日志工具支持
@@ -92,10 +93,11 @@ platform_features:
     name: Branch Protection
     status: Committed
     priority: P0
-    version: "11.13.1"
-    updated: "2026-01-31"
+    version: "12.4.14"
+    updated: "2026-02-04"
     description: |
       防止在 main/develop 分支直接写代码，强制使用 cp-*/feature/* 工作分支
+      v12.4.14: 修复 gitignored PRD/DoD 文件检测（跳过 git 追踪检查，只验证存在性和内容）
       v11.13.1: 支持 monorepo 子目录 PRD/DoD 文件检测（如 apps/core/.prd.md）
       v11.11.0: P1-6 修复 - 使用 grep -Eq 替代 bash regex 进行 skills 路径匹配（修复分组失败问题）
       v11.5.0: 放宽 skills 保护（只保护 Engine skills：dev, qa, audit, semver，其他 skills 可从任何 repo 部署）
