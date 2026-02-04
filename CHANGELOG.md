@@ -1,3 +1,37 @@
+## [12.5.0] - 2026-02-04
+
+### Fixed
+
+- **CI/CD Bug 修复**:
+  - `ci.yml`: contract-drift-check 跳过状态处理 + cancelled 状态检测
+  - `ci.yml`: regression-pr/release-check 允许 skipped 状态
+  - `ci.yml`: MAX_SKIP 默认值统一为 3（原 163 行和 480 行不一致）
+  - `back-merge.yml`: PR 号提取失败时报错退出（原静默继续）
+  - `evidence-gate.sh`: checks 目录不存在时报错（原跳过 hash 验证）
+  - `impact-check.sh`: BASE_REF 不存在时报错（原静默空结果）
+  - `l2b-check.sh`: 时间戳检查逻辑修正（evidence 必须在 commit 后生成）
+  - `auto-merge.yml`: 改用 check-runs API 替代过时的 commit status API
+
+- **Branch Protection Bug 修复**:
+  - `setup-branch-protection.sh`: jq 过滤器逻辑统一（null 处理一致）
+  - `setup-branch-protection.sh`: API 返回 JSON 验证
+  - `branch-protect.sh`: 使用 grep -F 避免 regex 注入风险（分支名含特殊字符）
+  - `branch-protect.sh`: Step 3 超时检查（防止卡在 in_progress 绕过）
+  - `branch-protect.sh`: 使用 awk 替代 cut 处理多空格
+
+- **Stop Hook Bug 修复**:
+  - `stop.sh`: step 状态检测逻辑修正（使用正确的字段名模式）
+  - `stop.sh`: 重试计数 off-by-one 修复（先递增后检查）
+  - `stop.sh`: sed 跨平台兼容（macOS vs Linux）
+  - `stop.sh`: Step 11 状态检测使用 awk 替代 grep -q
+  - `mark-subagent-done.sh`: mkdir 错误处理
+  - `ci-status.sh`: jq 输出验证 + 使用 jq 生成 JSON
+
+### Removed
+
+- `hooks/subagent-stop.sh` - 不再需要（无 subagents）
+- `.claude/settings.json` 中的 SubagentStop hook 配置
+
 ## [12.4.8] - 2026-02-04
 
 ### Changed

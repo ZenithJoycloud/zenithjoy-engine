@@ -20,11 +20,6 @@
           {"type": "command", "command": "./hooks/require-subagent-token.sh"}
         ]
       }
-    ],
-    "SubagentStop": [
-      {
-        "hooks": [{"type": "command", "command": "./hooks/subagent-stop.sh"}]
-      }
     ]
   }
 }

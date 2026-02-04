@@ -85,6 +85,10 @@ jobs:
           # 3) 尝试开启 auto-merge
           # CRITICAL FIX: 移除 || true，让失败被正确报告
           pr_number=$(echo "$pr_url" | sed -n 's#.*/pull/\([0-9]\+\)$#\1#p')
+          if [[ -z "${pr_number:-}" ]]; then
+            echo "❌ 无法从 PR URL 提取 PR 号: $pr_url"
+            exit 1
+          fi
           if [[ -n "${pr_number:-}" ]]; then
             echo "尝试启用 auto-merge..."
             if gh pr merge "$pr_number" --repo "$OWNER_REPO" --auto --merge; then
