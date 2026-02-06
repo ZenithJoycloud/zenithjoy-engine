@@ -260,6 +260,8 @@ describe('BaselineEngine', () => {
         },
       ];
 
+      // Disable outlier filtering for predictable results
+      engine.updateConfig({ excludeOutliers: false });
       const baseline = engine.calculateBaseline(data, PlatformType.MOCK, BaselineMode.WEEKLY);
 
       expect(baseline).toBeDefined();

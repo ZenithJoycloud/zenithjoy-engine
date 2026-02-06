@@ -327,6 +327,9 @@ describe('StorageService', () => {
 
       await service.saveBaselineData(oldBaseline);
 
+      // Add a small delay to ensure different timestamps
+      await new Promise(resolve => setTimeout(resolve, 10));
+
       // Save a newer baseline
       const newBaseline: BaselineData = {
         ...oldBaseline,

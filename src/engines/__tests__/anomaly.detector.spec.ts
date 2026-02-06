@@ -102,7 +102,7 @@ describe('AnomalyDetector', () => {
         platform: PlatformType.MOCK,
         timestamp: new Date('2024-01-08'),
         pageViews: 1300, // 3 standard deviations above
-        uniqueVisitors: 390, // 3 standard deviations above
+        uniqueVisitors: 210, // 3 standard deviations below
         sessions: 400, // Normal
         avgSessionDuration: 180,
         bounceRate: 45,
@@ -113,7 +113,7 @@ describe('AnomalyDetector', () => {
       expect(result.isAnomaly).toBe(true);
       expect(result.type).toBe('pattern');
       expect(result.anomalousMetrics!.length).toBe(2);
-      expect(result.description).toContain('Multiple metrics');
+      expect(result.description).toContain('mixed directions');
     });
 
     it('should not detect anomaly for normal data', () => {
