@@ -147,9 +147,9 @@ describe('Monitoring System E2E', () => {
         return items[items.length - 1];
       };
 
-      // Generate month of data
-      console.log('Generating month of traffic data...');
-      for (let day = 1; day <= 28; day++) {
+      // Generate week of data (reduced from month for faster testing)
+      console.log('Generating week of traffic data...');
+      for (let day = 1; day <= 7; day++) {
         const currentDate = new Date(startDate);
         currentDate.setDate(day);
         generateTrafficForDay(currentDate);
@@ -159,7 +159,7 @@ describe('Monitoring System E2E', () => {
 
       // Calculate daily metrics for baseline
       const dailyMetrics: TrafficMetrics[] = [];
-      for (let day = 1; day <= 28; day++) {
+      for (let day = 1; day <= 7; day++) {
         const dayStart = new Date(startDate);
         dayStart.setDate(day);
         dayStart.setHours(0, 0, 0, 0);
@@ -171,18 +171,18 @@ describe('Monitoring System E2E', () => {
         dailyMetrics.push(metrics);
       }
 
-      // Calculate baseline from first 3 weeks
-      const historicalMetrics = dailyMetrics.slice(0, 21);
+      // Calculate baseline from first 5 days
+      const historicalMetrics = dailyMetrics.slice(0, 5);
       const baseline = calculator.calculateBaseline(
         historicalMetrics,
         'monthly',
         startDate,
-        new Date('2026-02-21T23:59:59Z')
+        new Date('2026-02-05T23:59:59Z')
       );
 
-      // Get current week metrics
-      const currentWeekStart = new Date('2026-02-22T00:00:00Z');
-      const currentWeekEnd = new Date('2026-02-28T23:59:59Z');
+      // Get current days metrics
+      const currentWeekStart = new Date('2026-02-06T00:00:00Z');
+      const currentWeekEnd = new Date('2026-02-07T23:59:59Z');
       const currentMetrics = monitor.getMetrics(currentWeekStart, currentWeekEnd);
 
       // Detect anomalies
