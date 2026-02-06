@@ -93,7 +93,8 @@ export class ContentGenerator {
 
     // Simulate content generation with varied content to avoid repetition detection
     const paragraphs = [];
-    const numParagraphs = Math.max(3, Math.min(10, Math.floor(maxTokens / 100)));
+    // Ensure at least 5 paragraphs for minimum word count requirements
+    const numParagraphs = Math.max(5, Math.min(10, Math.floor(maxTokens / 80)));
 
     // Generate varied paragraphs with different content patterns
     const templates = [
