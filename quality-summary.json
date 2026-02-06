@@ -1,13 +1,45 @@
 {
-  "branch": "cp-ci-stress-test-fixes",
-  "checks": {
-    "typecheck": {"status": "pass"},
-    "test": {"status": "pass", "total": 395, "passed": 395, "skipped": 2},
-    "build": {"status": "pass"},
-    "shell": {"status": "pass"}
+  "timestamp": "2026-02-06T20:35:00Z",
+  "branch": "cp-02062027-b6dac76d-9b0c-4a2c-a2bb-1652ae",
+  "quality_checks": {
+    "documentation": {
+      "status": "PASS",
+      "files_created": 4,
+      "total_lines": 3245,
+      "checks": {
+        "tech_design": {
+          "exists": true,
+          "has_architecture_diagram": true,
+          "has_data_flow": true,
+          "has_tech_comparison": true,
+          "comparison_count": 3
+        },
+        "api_design": {
+          "exists": true,
+          "endpoints_defined": 6,
+          "has_request_response": true,
+          "has_error_codes": true
+        },
+        "database_schema": {
+          "exists": true,
+          "tables_defined": 12,
+          "has_indexes": true,
+          "has_partitioning": true,
+          "has_retention_policy": true
+        },
+        "report_template": {
+          "exists": true,
+          "has_example": true,
+          "has_metrics_definition": true,
+          "has_automation_logic": true
+        }
+      }
+    },
+    "compliance": {
+      "prd_requirements_met": 6,
+      "dod_items_completed": 11,
+      "qa_decisions_documented": true
+    }
   },
-  "gates": {
-    "quality": {"status": "pass"}
-  },
-  "timestamp": "2026-02-03T12:22:22Z"
+  "summary": "All quality checks passed. Documentation deliverables complete."
 }
