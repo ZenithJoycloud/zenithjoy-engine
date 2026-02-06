@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [9.0.0] - 2026-02-06
+
+### Added
+- **BREAKING**: Multi-platform auto-publish system - complete rewrite for KR2
+- Support for 6 major content platforms (WeChat, Xiaohongshu, and 4 more planned)
+- Unified publishing API with batch support
+- Content adaptation for each platform (image resize, text truncation, tag conversion)
+- Retry mechanism with exponential backoff
+- Platform health check and auth refresh
+- Comprehensive test suite (160 tests)
+- Performance optimization for < 30s publish latency
+
+### Changed
+- **BREAKING**: Main export now focuses on multi-platform publishing instead of workflow engine
+- Restructured codebase with platforms/, engine/, and adapters/ modules
+- Enhanced TypeScript strict mode coverage
+
 ## [8.24.0] - 2026-01-23
 
 ### Security (CRITICAL 级安全修复)
