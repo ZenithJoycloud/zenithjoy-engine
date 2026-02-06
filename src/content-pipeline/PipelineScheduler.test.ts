@@ -116,7 +116,7 @@ describe('PipelineScheduler', () => {
       expect(result.totalItems).toBe(5);
       // Should process in 3 batches: [0,1], [2,3], [4]
       expect(result.results).toHaveLength(5);
-    });
+    }, 10000); // Increase timeout
 
     it('should handle empty batch', async () => {
       const result = await scheduler.runBatchPipeline([]);

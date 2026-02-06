@@ -42,8 +42,8 @@ export class ContentGenerator {
    * Simulate AI content generation
    */
   private async simulateGeneration(config: GenerationConfig): Promise<Content> {
-    // Simulate processing delay
-    await this.delay(100 + Math.random() * 200);
+    // Simulate processing delay (reduced for CI)
+    await this.delay(10 + Math.random() * 20);
 
     const id = `content-${++this.idCounter}`;
     const now = new Date();
