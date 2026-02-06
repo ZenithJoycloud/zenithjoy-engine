@@ -7,6 +7,7 @@ AI 开发工作流核心组件。提供 Hooks、Skills 和 CI 模板，实现引
 - **分支保护 Hook**: 引导在 `cp-*` 或 `feature/*` 分支开发
 - **CI 自动合并**: PR 通过 CI 后自动合并
 - **统一开发 Skill**: `/dev` 一个对话完成整个开发流程
+- **平台流量监控**: 多平台数据采集、基线计算、异常检测和报告生成
 
 ## Prerequisites
 
@@ -127,6 +128,75 @@ GitHub 层面的保护：
 - main 禁止直接 push
 - PR 必须过 CI
 - CI 通过后自动合并
+
+## Platform Traffic Monitoring
+
+### 架构概览
+
+```
+平台 API → DataCollector → 标准化数据
+    ↓
+PostgreSQL ← StorageService
+    ↓
+BaselineEngine → 基线计算 → 异常检测
+    ↓
+ReportGenerator → 报告生成 → 推送
+```
+
+### 核心功能
+
+1. **数据采集器 (DataCollector)**
+   - 多平台并行采集
+   - 数据标准化处理
+   - 错误重试机制
+
+2. **基线计算引擎 (BaselineEngine)**
+   - 支持日均、周均、月均计算
+   - 异常检测算法（标准差、百分位）
+   - 动态基线调整
+
+3. **报告生成器 (ReportGenerator)**
+   - 月末自动生成报告
+   - 多格式输出（JSON、HTML、PDF）
+   - 可视化图表和趋势分析
+
+### 使用示例
+
+```typescript
+import {
+  MockPlatformCollector,
+  StorageService,
+  BaselineEngine,
+  ReportGenerator,
+  BaselineMode,
+  PlatformType
+} from 'zenithjoy-engine';
+
+// 初始化组件
+const collector = new MockPlatformCollector();
+const storage = new StorageService();
+const baselineEngine = new BaselineEngine();
+const reportGenerator = new ReportGenerator();
+
+// 采集数据
+const result = await collector.collect(startDate, endDate);
+await storage.saveTrafficDataBatch(result.data);
+
+// 计算基线
+const baseline = baselineEngine.calculateBaseline(
+  data,
+  PlatformType.MOCK,
+  BaselineMode.WEEKLY
+);
+
+// 生成报告
+const report = await reportGenerator.generateMonthlyReport(
+  data,
+  baselines,
+  startDate,
+  endDate
+);
+```
 
 ## License
 
