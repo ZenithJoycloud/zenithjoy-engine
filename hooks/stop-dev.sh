@@ -10,7 +10,7 @@
 #   - CI 通过？
 #   - PR 合并？
 #   全部满足 → 删除 .dev-mode → exit 0
-#   未满足 → JSON API + exit 0（强制循环，reason 作为 prompt 继续执行）
+#   未满足 → JSON API + exit 2（强制循环，reason 作为 prompt 继续执行）
 #
 # v11.11.0: P0-2 修复 - 添加 flock 并发锁 + 原子写入防止竞态条件
 # v11.15.0: P0-3 修复 - 会话隔离，检查 .dev-mode 中的分支是否与当前分支匹配
@@ -21,10 +21,11 @@
 
 set -euo pipefail
 
-# ===== 无头模式：直接退出，让外部循环控制 =====
-if [[ "${CECELIA_HEADLESS:-false}" == "true" ]]; then
-    exit 0
-fi
+# ===== 无头模式：不再旁路，与有头模式使用同一套状态机 =====
+# Headless 也必须检查 .dev-mode：
+#   - 有 .dev-mode → exit 2 继续循环
+#   - 无 .dev-mode → exit 0 允许结束
+# （后续会统一检查 .dev-mode，这里不做特殊处理）
 
 # ===== 加载共享库 =====
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -65,7 +66,7 @@ if [[ -n "$LOCK_UTILS" ]] && type acquire_dev_mode_lock &>/dev/null; then
         echo "" >&2
         echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" >&2
         jq -n --arg reason "另一个会话正在执行 Stop Hook，等待锁释放后继续检查完成条件" '{"decision": "block", "reason": $reason}'
-        exit 0
+        exit 2
     fi
 else
     # Fallback: 内联锁
@@ -76,7 +77,7 @@ else
         echo "" >&2
         echo "  [Stop Hook: 并发锁获取失败]" >&2
         jq -n --arg reason "并发锁获取失败，等待锁释放后继续" '{"decision": "block", "reason": $reason}'
-        exit 0
+        exit 2
     fi
 fi
 
