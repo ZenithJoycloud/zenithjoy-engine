@@ -35,6 +35,15 @@ echo "✅ 当前分支: $CURRENT_BRANCH"
 ## 创建 Worktree
 
 ```bash
+# 🆕 Bug 3 修复：创建前先更新 develop 分支
+echo "🔄 更新 develop 分支..."
+if git pull origin develop --ff-only 2>/dev/null; then
+    echo "✅ develop 已更新"
+else
+    echo "⚠️  无法更新 develop，使用当前版本"
+fi
+echo ""
+
 # 生成 worktree 路径和分支名
 TIMESTAMP=$(date +%s)
 WORKTREE_NAME="exploratory-$TIMESTAMP"
@@ -44,9 +53,10 @@ BRANCH_NAME="exp-$TIMESTAMP"
 echo "🌿 创建 Exploratory Worktree..."
 echo "   路径: $WORKTREE_PATH"
 echo "   分支: $BRANCH_NAME"
+echo "   Base: develop"
 
-# 创建 worktree
-git worktree add "$WORKTREE_PATH" -b "$BRANCH_NAME"
+# 🆕 Bug 3 修复：明确指定 base 分支为 develop
+git worktree add "$WORKTREE_PATH" -b "$BRANCH_NAME" develop
 
 if [[ ! -d "$WORKTREE_PATH" ]]; then
     echo "❌ Worktree 创建失败"
