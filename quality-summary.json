@@ -1,6 +1,22 @@
 {
-  "branch": "cp-02111439-exploratory-skill",
-  "head_sha": "b2663d1",
-  "timestamp": "2026-02-11T06:43:12Z",
-  "note": "Quality 只汇总，不判定。CI 是最终裁判。"
+  "timestamp": "2026-02-12T15:39:00+08:00",
+  "branch": "cp-02121533-fix-worktree-bugs",
+  "changes": {
+    "files_modified": 3,
+    "files_list": [
+      "skills/dev/steps/00-worktree-auto.md",
+      "skills/dev/scripts/worktree-manage.sh",
+      "skills/exploratory/steps/01-init.md"
+    ]
+  },
+  "quality_checks": {
+    "code_style": "✅ 符合现有代码风格",
+    "error_handling": "✅ 有适当的 fallback 逻辑",
+    "backward_compatibility": "✅ 完全兼容，只是行为变更（更安全）",
+    "documentation": "✅ 修改了相关文档"
+  },
+  "tests": {
+    "status": "running",
+    "note": "CI 会运行完整测试"
+  }
 }
