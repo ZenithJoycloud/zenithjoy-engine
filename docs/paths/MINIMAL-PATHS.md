@@ -191,15 +191,18 @@ changelog:
 
 ---
 
-### H9: Bash Guard (Credential Leak + HK Deploy Protection)
+### H9: Bash Guard (Credential Leak + File Exposure + HK Deploy Protection)
 
 1. ✅ **命令含真实 token → 被阻止**
-2. ✅ **rsync 到 HK + git dirty → 被阻止**
-3. ✅ **rsync 到 HK + git clean + main → 放行**
-4. ✅ **日常命令 (git/npm/echo) → 放行**
-5. ✅ **ssh hk → 放行（不拦）**
+2. ✅ **cp/mv ~/.credentials/ → 被阻止**
+3. ✅ **cat ~/.credentials/ > file → 被阻止**
+4. ✅ **source ~/.credentials/ → 放行（安全加载）**
+5. ✅ **rsync 到 HK + git dirty → 被阻止**
+6. ✅ **rsync 到 HK + git clean + main → 放行**
+7. ✅ **日常命令 (git/npm/echo) → 放行**
+8. ✅ **ssh hk → 放行（不拦）**
 
-**RCI 覆盖**: H9-001,H9-002,H9-003
+**RCI 覆盖**: H9-001,H9-002,H9-003,H9-004
 
 ---
 
