@@ -278,19 +278,19 @@ PR 创建 → CI 触发 → version-check + test + DevGate → 全部通过 → 
 
 ---
 
-## GP-018: Bash Guard (Credential Leak + HK Deploy Protection) (H9)
+## GP-018: Bash Guard (Credential Leak + File Exposure + HK Deploy Protection) (H9)
 
-**Feature**: H9 - Bash Guard (Credential Leak + HK Deploy Protection)
+**Feature**: H9 - Bash Guard (Credential Leak + File Exposure + HK Deploy Protection)
 **Priority**: P1
 
 ### Golden Path
 
 ```
-Bash 命令 → token 扫描 (~1ms) → rsync/scp + HK 检测 (~1ms) →
-未命中 → 放行 | 命中 HK → git 三连检 → 通过/阻止
+Bash 命令 → token 扫描 (~1ms) → .credentials/ 暴露检测 (~1ms) →
+rsync/scp + HK 检测 (~1ms) → 未命中 → 放行 | 命中 HK → git 三连检 → 通过/阻止
 ```
 
-**RCI 覆盖**: H9-001,H9-002,H9-003
+**RCI 覆盖**: H9-001,H9-002,H9-003,H9-004
 
 ---
 

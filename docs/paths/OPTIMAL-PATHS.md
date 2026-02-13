@@ -173,11 +173,11 @@ PR 创建 → CI 触发 → version-check + test + DevGate → 全部通过 → 
 
 ---
 
-### H9: Bash Guard (Credential Leak + HK Deploy Protection)
+### H9: Bash Guard (Credential Leak + File Exposure + HK Deploy Protection)
 
 ```
-Bash 命令 → token 扫描 (~1ms) → rsync/scp + HK 检测 (~1ms) →
-未命中 → 放行 | 命中 HK → git 三连检 → 通过/阻止
+Bash 命令 → token 扫描 (~1ms) → .credentials/ 暴露检测 (~1ms) →
+rsync/scp + HK 检测 (~1ms) → 未命中 → 放行 | 命中 HK → git 三连检 → 通过/阻止
 ```
 
 ---
