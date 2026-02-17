@@ -15,9 +15,10 @@
 # - product_features:  引擎核心能力（工作流、测试、报告、自动化）
 # ============================================================================
 
-version: "2.91.0"
-updated: "2026-02-14"
+version: "2.92.0"
+updated: "2026-02-17"
 changelog:
+  - 2.92.0: v12.27.0 - Step 10 自动推进 Capability stage（update-capability.sh + Brain API 链路）
   - 2.91.0: v12.26.0 - Capability-Driven Development Phase 2（validate-okr.py 7 个 capability 校验 + store-to-database.sh capability 字段传递 + /okr SKILL.md "开工前必问"规则 + initiatives[] 格式）
   - 2.90.0: v12.25.0 - cleanup.sh 自动清理远程已删除的分支（Step 9.5 + gone 分支检测 + 批量删除 + 保持仓库干净）
   - 2.89.0: v12.24.0 - Exploratory Skill 完整性保证（Stop Hook 检查 PRD/DOD 生成 + worktree 清理 + merge 工具合并多个 exploratory 产出 + 24 个测试）
